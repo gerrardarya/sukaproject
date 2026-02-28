@@ -11,8 +11,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Premium Gifting - Creating Art Through Thoughtful Gifts",
-  description: "Premium gifting and hampers brand creating art through thoughtful, personalized gifts. Signature hampers, baby hampers, and corporate merchandise.",
+  title: "Custom at Suka - Custom Suka Suka dan bikin",
+  description:
+    "Premium gifting and hampers brand creating art through thoughtful, personalized gifts. Signature hampers, baby hampers, and corporate merchandise.",
 };
 
 export default function RootLayout({
@@ -22,12 +23,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${poppins.variable} antialiased`}
-      >
-        <RootLayoutClient>
-          {children}
-        </RootLayoutClient>
+      <body className={`${poppins.variable} antialiased`}>
+        <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>
   );
