@@ -481,7 +481,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         </div>
 
         <header
-          className="staggered-menu-header bg-background/95 absolute top-0 left-0 w-full flex items-center w-full justify-between p-[2em] pointer-events-none z-50 border-b border-border"
+          className="staggered-menu-header bg-background/95 absolute top-0 left-0 w-full flex items-center w-full justify-between p-[1em] pointer-events-none z-50 border-b border-border"
           aria-label="Main navigation header"
         >
           <div
@@ -631,7 +631,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   pointer-events: auto;
 }
 .sm-scope .staggered-menu-wrapper { position: relative; width: 100%; height: 100%; z-index: 40; pointer-events: none; }
-.sm-scope .staggered-menu-header { position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 2em; pointer-events: none; z-index: 20; }
+.sm-scope .staggered-menu-header { position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 1em; pointer-events: none; z-index: 20; }
 .sm-scope .staggered-menu-header > * { pointer-events: auto; }
 .sm-scope .sm-logo { display: flex; align-items: center; user-select: none; }
 .sm-scope .sm-logo-img { display: block; height: 32px; width: auto; object-fit: contain; }
