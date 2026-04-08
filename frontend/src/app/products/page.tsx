@@ -1,242 +1,172 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase, type Product } from "@/lib/supabase";
 
-// Mock product data
-const products = [
-  {
-    id: 1,
-    name: "Artisan Welcome Hamper",
-    description:
-      "A curated selection of premium local artisan goods, thoughtfully arranged for a warm welcome.",
-    category: "Signature Hamper Collection",
-    image: "/product/product-1.jpeg",
-    images: [
-      "/product/product-1.jpeg",
-      "/product/banner-1.jpeg",
-      "/product/product-2.jpeg",
-    ],
-  },
-  {
-    id: 2,
-    name: "Heritage Gift Collection",
-    description:
-      "Timeless pieces celebrating craftsmanship and tradition, perfect for meaningful moments.",
-    category: "Artisan Gift Curation",
-    image: "/product/product-2.jpeg",
-    images: [
-      "/product/product-2.jpeg",
-      "/product/product-3.jpeg",
-      "/product/banner-1.jpeg",
-    ],
-  },
-  {
-    id: 3,
-    name: "Gentle Beginnings Set",
-    description:
-      "Soft, organic essentials for the newest member of the family, wrapped with love.",
-    category: "Premium Baby Essential",
-    image: "/product/product-3.jpeg",
-    images: [
-      "/product/product-3.jpeg",
-      "/product/product-1.jpeg",
-      "/product/product-4.jpeg",
-    ],
-  },
-  {
-    id: 4,
-    name: "Executive Appreciation",
-    description:
-      "Sophisticated branded gifts that reflect excellence and professional gratitude.",
-    category: "Corporate Gift",
-    image: "/product/product-4.jpeg",
-    images: [
-      "/product/product-4.jpeg",
-      "/product/banner-1.jpeg",
-      "/product/product-2.jpeg",
-    ],
-  },
-  {
-    id: 5,
-    name: "Celebration Hamper",
-    description:
-      "Luxurious treats and delights curated to mark special occasions with elegance.",
-    category: "Signature Hamper Collection",
-    image: "/product/product-1.jpeg",
-    images: [
-      "/product/product-1.jpeg",
-      "/product/product-3.jpeg",
-      "/product/banner-1.jpeg",
-    ],
-  },
-  {
-    id: 6,
-    name: "Handcrafted Treasures",
-    description:
-      "Unique artisan pieces selected for their beauty, quality, and story.",
-    category: "Artisan Gift Curation",
-    image: "/product/product-2.jpeg",
-    images: [
-      "/product/product-2.jpeg",
-      "/product/product-4.jpeg",
-      "/product/product-1.jpeg",
-    ],
-  },
-  {
-    id: 7,
-    name: "Nursery Essentials Bundle",
-    description:
-      "Premium quality baby items in soft, natural materials for gentle care.",
-    category: "Premium Baby Essential",
-    image: "/product/product-3.jpeg",
-    images: [
-      "/product/product-3.jpeg",
-      "/product/banner-1.jpeg",
-      "/product/product-2.jpeg",
-    ],
-  },
-  {
-    id: 8,
-    name: "Corporate Recognition Set",
-    description:
-      "Elegant branded merchandise designed to honor achievement and partnership.",
-    category: "Corporate Gift",
-    image: "/product/product-4.jpeg",
-    images: [
-      "/product/product-4.jpeg",
-      "/product/product-1.jpeg",
-      "/product/product-3.jpeg",
-    ],
-  },
-  {
-    id: 9,
-    name: "Seasonal Delights Hamper",
-    description:
-      "A carefully composed collection celebrating the finest seasonal offerings.",
-    category: "Signature Hamper Collection",
-    image: "/product/product-1.jpeg",
-    images: [
-      "/product/product-1.jpeg",
-      "/product/product-2.jpeg",
-      "/product/banner-1.jpeg",
-    ],
-  },
-  {
-    id: 10,
-    name: "Artisan Home Collection",
-    description:
-      "Beautiful handmade pieces to elevate everyday living with intention.",
-    category: "Artisan Gift Curation",
-    image: "/product/product-2.jpeg",
-    images: [
-      "/product/product-2.jpeg",
-      "/product/product-3.jpeg",
-      "/product/product-4.jpeg",
-    ],
-  },
-  {
-    id: 11,
-    name: "New Parent Care Package",
-    description:
-      "Thoughtful essentials for both baby and parents during precious early days.",
-    category: "Premium Baby Essential",
-    image: "/product/product-3.jpeg",
-    images: [
-      "/product/product-3.jpeg",
-      "/product/banner-1.jpeg",
-      "/product/product-1.jpeg",
-    ],
-  },
-  {
-    id: 12,
-    name: "Leadership Excellence Gift",
-    description:
-      "Distinguished gifts that convey respect and appreciation for leadership.",
-    category: "Corporate Gift",
-    image: "/product/product-4.jpeg",
-    images: [
-      "/product/product-4.jpeg",
-      "/product/product-2.jpeg",
-      "/product/product-3.jpeg",
-    ],
-  },
-];
-
-const categories = [
-  "All",
-  "Signature Hamper Collection",
-  "Artisan Gift Curation",
-  "Premium Baby Essential",
-  "Corporate Gift",
-];
+function formatPrice(value: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const filteredProducts =
-    activeCategory === "All"
-      ? products
-      : products.filter((product) => product.category === activeCategory);
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const { data, error: fetchError } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
 
-  const handleCategoryChange = (category: string) => {
-    setIsTransitioning(true);
-    setActiveCategory(category);
-    setTimeout(() => setIsTransitioning(false), 300);
-  };
+    if (fetchError) {
+      setError(fetchError.message);
+      setProducts([]);
+    } else {
+      setProducts((data as Product[]) ?? []);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) {
+      const c = p.category?.trim();
+      if (c) set.add(c);
+    }
+    return ["All", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (activeCategory === "All") return products;
+    return products.filter((p) => p.category === activeCategory);
+  }, [products, activeCategory]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f8f7f4]">
       <Header />
 
-      {/* Page Content */}
-      <main className="pt-32 pb-24 px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Page Header */}
-          <div className="text-center mb-16 lg:mb-20">
-            <div className="inline-block mb-4">
-              <span className="text-accent text-sm font-medium tracking-wider uppercase">
-                Explore
-              </span>
-            </div>
-            <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl text-foreground font-semibold tracking-tight mb-6">
+      <main className="pt-28 pb-20 px-6 lg:px-10">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <header className="mb-12 lg:mb-14 max-w-2xl">
+            <p className="text-accent text-xs font-medium tracking-[0.2em] uppercase mb-3">
+              Catalogue
+            </p>
+            <h1 className="text-foreground text-3xl md:text-4xl font-semibold tracking-tight">
               Our Creations
             </h1>
-            <p className="text-muted text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-              Each piece is thoughtfully designed with intention and care.
+            <p className="mt-3 text-muted text-sm md:text-base leading-relaxed">
+              Pieces from our studio — updated as we add new work.
             </p>
-          </div>
+          </header>
 
-          {/* Category Filter */}
-          <CategoryFilter
-            categories={categories}
-            activeCategory={activeCategory}
-            onCategoryChange={handleCategoryChange}
-          />
+          {/* Categories */}
+          {!loading && products.length > 0 && (
+            <div className="mb-10 flex flex-wrap gap-2">
+              {categories.map((cat) => {
+                const active = activeCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActiveCategory(cat)}
+                    className={[
+                      "rounded-full px-4 py-2 text-xs font-medium transition-colors duration-200",
+                      "border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f7f4]",
+                      active
+                        ? "border-foreground/20 bg-foreground text-[#f8f7f4]"
+                        : "border-border/80 bg-white/80 text-muted hover:text-foreground hover:border-foreground/15",
+                    ].join(" ")}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
-          {/* Product Grid */}
-          <div
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 transition-opacity duration-300 ${
-              isTransitioning ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {/* Loading */}
+          {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-border/50 bg-white/60 overflow-hidden animate-pulse"
+                >
+                  <div className="aspect-[4/5] bg-border/40" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-3 w-16 bg-border/60 rounded" />
+                    <div className="h-5 w-3/4 bg-border/60 rounded" />
+                    <div className="h-3 w-full bg-border/40 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
-          {/* Empty State */}
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-muted text-lg">
-                No products found in this category.
+          {/* Error */}
+          {!loading && error && (
+            <div className="rounded-2xl border border-border/60 bg-white px-6 py-10 text-center">
+              <p className="text-foreground text-sm font-medium">
+                Could not load products
+              </p>
+              <p className="text-muted text-sm mt-2">{error}</p>
+              <button
+                type="button"
+                onClick={() => loadProducts()}
+                className="mt-6 text-sm font-medium text-accent underline-offset-4 hover:underline"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {/* Empty */}
+          {!loading && !error && products.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-border/80 bg-white/50 px-8 py-16 text-center">
+              <p className="text-foreground text-sm font-medium">
+                No products yet
+              </p>
+              <p className="text-muted text-sm mt-2 max-w-md mx-auto">
+                Check back soon, or get in touch if you have something custom in mind.
               </p>
             </div>
           )}
+
+          {/* Grid */}
+          {!loading && !error && filteredProducts.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+
+          {!loading &&
+            !error &&
+            products.length > 0 &&
+            filteredProducts.length === 0 && (
+              <p className="text-center text-muted text-sm py-16">
+                No items in this category.
+              </p>
+            )}
         </div>
       </main>
 
@@ -245,98 +175,47 @@ export default function ProductsPage() {
   );
 }
 
-// Category Filter Component
-function CategoryFilter({
-  categories,
-  activeCategory,
-  onCategoryChange,
-}: {
-  categories: string[];
-  activeCategory: string;
-  onCategoryChange: (category: string) => void;
-}) {
-  return (
-    <div className="mb-12 lg:mb-16">
-      <div className="mx-auto max-w-7xl">
-        {/* Label row */}
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-xs font-medium tracking-[0.18em] uppercase text-muted">
-            Categories
-          </p>
-          <p className="text-xs text-muted hidden sm:block">Tap to filter</p>
-        </div>
+function ProductCard({ product }: { product: Product }) {
+  const id = product.id;
+  if (id == null) return null;
 
-        {/* Scroll wrapper */}
-        <div className="relative">
-          {/* subtle fade edges (mobile hint) */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent md:hidden" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent md:hidden" />
+  const href = `/products/${id}`;
+  const imageSrc =
+    product.image_url?.trim() || "/logo/logo-red.png";
 
-          <div
-            className="
-              flex gap-2 overflow-x-auto no-scrollbar py-2
-              md:justify-center md:flex-wrap md:overflow-visible
-            "
-          >
-            {categories.map((category) => {
-              const isActive = activeCategory === category;
-
-              return (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => onCategoryChange(category)}
-                  className={[
-                    "shrink-0 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-300",
-                    "border backdrop-blur-md",
-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                    isActive
-                      ? "bg-accent text-white border-accent shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
-                      : "bg-background/60 text-foreground/70 border-border hover:text-foreground hover:bg-background hover:border-foreground/10",
-                  ].join(" ")}
-                >
-                  {category}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Small helper text (mobile) */}
-        <p className="mt-3 text-xs text-muted md:hidden">
-          Swipe left/right to see more categories
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// Product Card Component
-function ProductCard({ product }: { product: (typeof products)[0] }) {
   return (
     <Link
-      href={`/products/${product.id}`}
-      className="group bg-background rounded-2xl overflow-hidden border border-border hover:border-accent/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 block"
+      href={href}
+      className="group block rounded-2xl border border-border/60 bg-white overflow-hidden transition-all duration-300 hover:border-accent/35 hover:bg-accent/[0.03]"
     >
-      <div className="relative h-80 overflow-hidden bg-cream">
+      <div className="relative aspect-[4/5] bg-[#f0efea] overflow-hidden">
         <Image
-          src={product.image}
+          src={imageSrc}
           alt={product.name}
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+          unoptimized={imageSrc.startsWith("http")}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent opacity-80 group-hover:from-foreground/15 transition-opacity duration-300" />
       </div>
-      <div className="p-8 space-y-3">
-        <div className="text-xs text-accent font-medium tracking-wider uppercase">
-          {product.category}
-        </div>
-        <h3 className="font-serif text-2xl text-foreground font-medium leading-tight">
+      <div className="p-5 space-y-2">
+        {product.category ? (
+          <p className="text-[11px] font-medium tracking-[0.14em] uppercase text-accent">
+            {product.category}
+          </p>
+        ) : null}
+        <h2 className="text-foreground text-base font-semibold tracking-tight leading-snug group-hover:text-accent transition-colors duration-200">
           {product.name}
-        </h3>
-        <p className="text-muted text-[15px] leading-relaxed">
+        </h2>
+        <p className="text-muted text-sm leading-relaxed line-clamp-2">
           {product.description}
         </p>
+        {typeof product.price === "number" && !Number.isNaN(product.price) ? (
+          <p className="text-foreground/80 text-sm font-medium pt-1">
+            {formatPrice(product.price)}
+          </p>
+        ) : null}
       </div>
     </Link>
   );

@@ -2,36 +2,38 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import PreLoader from "./PreLoader";
+import WelcomePopup from "./WelcomePopup";
+import FloatingWhatsApp from "./FloatingWhatsApp";
 
 interface RootLayoutClientProps {
   children: React.ReactNode;
 }
 
+const STORAGE_KEY = "welcome_popup_seen";
+
 export default function RootLayoutClient({ children }: RootLayoutClientProps) {
-  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
+  const [showPopup, setShowPopup] = useState(false);
 
-  // Only show preloader on homepage
-  const shouldShowPreloader = pathname === "/";
-
-  const handleLoadingComplete = () => {
-    setIsLoading(false);
-  };
-
-  // Skip loading state if not on homepage
   useEffect(() => {
-    if (!shouldShowPreloader) {
-      setIsLoading(false);
+    // Only show on homepage and only once per session
+    if (pathname !== "/") return;
+    const seen = sessionStorage.getItem(STORAGE_KEY);
+    if (!seen) {
+      setShowPopup(true);
     }
-  }, [shouldShowPreloader]);
+  }, [pathname]);
+
+  const handleClose = () => {
+    setShowPopup(false);
+    sessionStorage.setItem(STORAGE_KEY, "true");
+  };
 
   return (
     <>
-      {shouldShowPreloader && <PreLoader onLoadingComplete={handleLoadingComplete} />}
-      <div className={isLoading && shouldShowPreloader ? "opacity-0" : "opacity-100 transition-opacity duration-500"}>
-        {children}
-      </div>
+      {showPopup && <WelcomePopup onClose={handleClose} />}
+      {children}
+      <FloatingWhatsApp />
     </>
   );
 }

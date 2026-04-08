@@ -1,67 +1,176 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import StaggeredMenu from "./StaggeredMenu";
+import { ChevronDown } from "lucide-react";
+import MobileNav from "./MobileNav";
+
+type DropdownItem = { label: string; href: string };
+type NavItem =
+  | { label: string; href: string; children?: never }
+  | { label: string; href?: never; children: DropdownItem[] };
+
+const NAV: NavItem[] = [
+  {
+    label: "Products",
+    children: [
+      { label: "All Products", href: "/products" },
+      { label: "Baby Hampers & Birthday", href: "/products?category=baby" },
+      { label: "Corporate", href: "/products?category=corporate" },
+      { label: "Packaging", href: "/products?category=packaging" },
+      { label: "Wedding", href: "/products?category=wedding" },
+    ],
+  },
+  {
+    label: "How to Order",
+    children: [
+      { label: "Ordering guide", href: "/how-to-order" },
+      { label: "Process", href: "/#process" },
+      { label: "FAQ", href: "/#faq" },
+    ],
+  },
+  {
+    label: "About Us",
+    children: [
+      { label: "Our Story", href: "/#story" },
+      { label: "Clients", href: "/#clients" },
+      { label: "Vision & Mission", href: "/#vision" },
+    ],
+  },
+  { label: "Contact Us", href: "/#contact" },
+];
+
+const socialItems = [
+  { label: "WhatsApp", link: "https://wa.me/1234567890" },
+  { label: "Instagram", link: "https://www.instagram.com/custom.at.suka/" },
+];
 
 export default function Header() {
+  const [scrolled, setScrolled] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const menuItems = [
-    { label: 'Products', ariaLabel: 'View our creations', link: '/products' },
-    { label: 'Philosophy', ariaLabel: 'Our philosophy', link: '/#philosophy' },
-    { label: 'Process', ariaLabel: 'Our creative process', link: '/#process' },
-    { label: 'Services', ariaLabel: 'What we do', link: '/#services' },
-    { label: 'Contact', ariaLabel: 'Get in touch', link: '/#contact' }
-  ];
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const socialItems = [
-    { label: 'WhatsApp', link: 'https://wa.me/1234567890' },
-    { label: 'Instagram', link: 'https://www.instagram.com/custom.at.suka/' }
-  ];
+  const isOpaque = scrolled || hovered;
+
+  const handleMenuEnter = (label: string) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpenMenu(label);
+  };
+
+  const handleMenuLeave = () => {
+    closeTimer.current = setTimeout(() => setOpenMenu(null), 120);
+  };
 
   return (
-    <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-md border-b border-border lg:bg-background/95 z-50">
+    <nav
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isOpaque
+          ? "bg-white/98 backdrop-blur-md border-b border-border/40 shadow-sm"
+          : "bg-transparent border-b border-transparent"
+      }`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+        setOpenMenu(null);
+      }}
+    >
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
-
-        {/* Desktop/Tablet Navigation */}
+        {/* Desktop Navigation */}
         <div className="hidden lg:flex justify-between items-center">
-          <Link href="/" className="relative h-12 w-auto flex items-center">
+          <Link href="/" className="relative h-10 w-auto flex items-center flex-shrink-0">
             <Image
               src="/logo/logo-red.png"
-              alt="Premium Gifting"
+              alt="Custom at Suka"
               width={100}
-              height={5}
+              height={40}
               className="object-contain"
               priority
             />
           </Link>
-          <div className="flex items-center gap-8 text-sm font-medium">
-            <Link href="/products" className="hover:text-accent transition-colors duration-300">Products</Link>
-            <a href="#philosophy" className="hover:text-accent transition-colors duration-300">Philosophy</a>
-            <a href="#process" className="hover:text-accent transition-colors duration-300">Process</a>
-            <a href="#services" className="hover:text-accent transition-colors duration-300">Services</a>
-            <a href="#contact" className="hover:text-accent transition-colors duration-300">Contact</a>
+
+          <div className="flex items-center gap-1">
+            {NAV.map((item) =>
+              item.children ? (
+                <div
+                  key={item.label}
+                  className="relative"
+                  onMouseEnter={() => handleMenuEnter(item.label)}
+                  onMouseLeave={handleMenuLeave}
+                >
+                  <button
+                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                      isOpaque
+                        ? "text-foreground hover:text-accent hover:bg-accent/5"
+                        : "text-white/90 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {item.label}
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        openMenu === item.label ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {openMenu === item.label && (
+                    <div
+                      className="absolute top-full left-0 mt-1 w-52 bg-white rounded-2xl shadow-xl border border-border/30 overflow-hidden py-1.5"
+                      onMouseEnter={() => handleMenuEnter(item.label)}
+                      onMouseLeave={handleMenuLeave}
+                    >
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.label}
+                          href={child.href}
+                          className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-accent/5 transition-colors duration-150"
+                          onClick={() => setOpenMenu(null)}
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  key={item.label}
+                  href={item.href!}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                    isOpaque
+                      ? "text-foreground hover:text-accent hover:bg-accent/5"
+                      : "text-white/90 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              )
+            )}
           </div>
         </div>
 
-        {/* Mobile Navigation - Staggered Menu */}
-        <div className="lg:hidden">
-          <StaggeredMenu
-            position="right"
-            items={menuItems}
-            socialItems={socialItems}
-            displaySocials
-            displayItemNumbering={true}
-            menuButtonColor="#000000"
-            openMenuButtonColor="#000000"
-            changeMenuColorOnOpen={true}
-            colors={['#B19EEF', '#5227FF']}
-            logoUrl="/logo/logo-red.png"
-            accentColor="#5227FF"
-            isFixed={true}
-            onMenuOpen={() => console.log('Menu opened')}
-            onMenuClose={() => console.log('Menu closed')}
-          />
+        {/* Mobile: logo + burger menu */}
+        <div className="relative flex lg:hidden items-center justify-between gap-3">
+          <Link href="/" className="relative z-[60] flex h-10 shrink-0 items-center">
+            <Image
+              src="/logo/logo-red.png"
+              alt="Custom at Suka"
+              width={100}
+              height={40}
+              className="object-contain"
+              priority
+            />
+          </Link>
+          <MobileNav nav={NAV} socialItems={socialItems} scrolled={scrolled} />
         </div>
-
       </div>
     </nav>
   );

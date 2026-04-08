@@ -3,189 +3,195 @@
 import React from "react";
 import { MotionConfig, motion, type Variants } from "framer-motion";
 
-const easeLuxury = [0.22, 1, 0.36, 1] as const;
+const easeOut = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
-/** Premium stagger: calm, editorial rhythm */
 const headerWrap: Variants = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.16,
-      delayChildren: 0.05,
+      staggerChildren: 0.14,
+      delayChildren: 0.06,
     },
   },
 };
 
-const gridWrap: Variants = {
+const rowWrap: Variants = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.18, // ✅ stagger steps 01-05
-      delayChildren: 0.08,
+      staggerChildren: 0.11,
+      delayChildren: 0.12,
     },
   },
 };
 
 const fadeUpSoft: Variants = {
-  hidden: { opacity: 0, y: 18, filter: "blur(10px)" },
+  hidden: { opacity: 0, y: 22 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 1.15, ease: easeLuxury },
+    transition: { duration: 0.85, ease: easeOut },
   },
 };
 
-const stepIn: Variants = {
-  hidden: { opacity: 0, y: 22, scale: 0.985, filter: "blur(12px)" },
-  show: {
+const stepCard: Variants = {
+  hidden: { opacity: 0, y: 32, scale: 0.97 },
+  show: (i: number) => ({
     opacity: 1,
     y: 0,
     scale: 1,
-    filter: "blur(0px)",
-    transition: { duration: 1.1, ease: easeLuxury },
-  },
+    transition: {
+      duration: 0.72,
+      ease: easeOut,
+      delay: i * 0.08,
+    },
+  }),
 };
 
 export default function ProcessSection() {
   const steps = [
     {
-      step: "01",
+      num: "01",
       title: "Stories",
-      desc: "We begin by listening to your story",
+      desc: "We begin by listening to your unique story to understand the recipient.",
+      image:
+        "https://images.unsplash.com/photo-1516961642265-531546e84af2?auto=format&fit=crop&q=80&w=800",
     },
     {
-      step: "02",
+      num: "02",
       title: "Curation",
-      desc: "Carefully selecting premium materials",
+      desc: "Carefully sourcing premium, meaningful materials and goods.",
+      image:
+        "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=800",
     },
-    { step: "03", title: "Design", desc: "Crafting with intention and beauty" },
-    { step: "04", title: "Execution", desc: "Meticulous attention to detail" },
-    { step: "05", title: "Delivery", desc: "Timely, elegant presentation" },
+    {
+      num: "03",
+      title: "Design",
+      desc: "Crafting the arrangement with intention, beauty, and purpose.",
+      image:
+        "https://img.freepik.com/free-photo/different-presents-arrangement-high-angle_23-2149343246.jpg?t=st=1775613339~exp=1775616939~hmac=65bebd9dd453c3289bd2dd731408fde002437f0ae17b7b9b55d54a2b140b34fb&w=1480",
+    },
+    {
+      num: "04",
+      title: "Execution",
+      desc: "Meticulous attention to every ribbon, fold, and detail.",
+      image:
+        "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&q=80&w=800",
+    },
+    {
+      num: "05",
+      title: "Delivery",
+      desc: "Timely, elegant presentation that leaves a lasting impression.",
+      image:
+        "https://images.unsplash.com/photo-1615655406736-b37c4fabf923?auto=format&fit=crop&q=80&w=800",
+    },
   ];
 
   return (
-    <MotionConfig reducedMotion="never">
+    <MotionConfig reducedMotion="user">
       <section
         id="process"
-        className="relative py-24 lg:py-32 px-6 overflow-hidden"
+        className="w-full min-h-screen bg-background py-24 overflow-hidden text-foreground"
       >
-        {/* Premium background: soft glows + subtle texture */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-28 -left-24 h-80 w-80 rounded-full bg-accent/6 blur-3xl" />
-          <div className="absolute -bottom-32 -right-28 h-96 w-96 rounded-full bg-accent/6 blur-3xl" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,0,0,0.03),transparent_55%)]" />
-        </div>
-
-        <div className="max-w-7xl mx-auto relative">
-          {/* ✅ KEEP YOUR HEADER (unchanged content, just wrapped in motion) */}
+        <div className="max-w-[1400px] mx-auto pl-8 pr-6 md:pl-16 md:pr-12 lg:pl-24 lg:pr-16">
           <motion.div
-            className="text-center mb-14 lg:mb-16"
+            className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8"
             variants={headerWrap}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, amount: 0.5 }}
-            data-scroll
-            data-scroll-speed="0.2"
+            viewport={{ once: true, amount: 0.35 }}
           >
-            <motion.p
-              variants={fadeUpSoft}
-              className="text-accent text-sm font-medium tracking-[0.18em] uppercase"
-            >
-              Our Process
-            </motion.p>
+            <div className="max-w-2xl">
+              <motion.span
+                variants={fadeUpSoft}
+                className="text-accent text-xs font-medium tracking-[0.2em] uppercase mb-4 block"
+              >
+                Our Process
+              </motion.span>
+              <motion.h2
+                variants={fadeUpSoft}
+                className="font-serif text-4xl md:text-5xl lg:text-6xl text-foreground font-semibold tracking-tight leading-tight mb-6 md:mb-0"
+              >
+                The art of <br className="hidden md:block" />
+                creating.
+              </motion.h2>
+            </div>
 
-            <motion.h2
+            <motion.div
               variants={fadeUpSoft}
-              className="mt-3 font-serif text-3xl md:text-4xl lg:text-5xl text-foreground font-semibold tracking-tight"
+              className="max-w-md md:pb-2"
             >
-              Our Way of Creating
-            </motion.h2>
-
-            <motion.p
-              variants={fadeUpSoft}
-              className="mt-4 text-muted text-base md:text-lg max-w-2xl mx-auto leading-relaxed"
-            >
-              A thoughtful process that transforms stories into beautiful,
-              meaningful gifts.
-            </motion.p>
+              <p className="text-muted text-base md:text-lg leading-relaxed mb-6">
+                A thoughtful journey that transforms your stories into beautiful,
+                meaningful gifts for the ones you cherish.
+              </p>
+              <button
+                type="button"
+                className="group flex items-center gap-2 text-sm font-medium tracking-wide text-foreground border-b border-border pb-1 hover:text-accent hover:border-accent/50 transition-colors duration-300"
+              >
+                Start your custom hamper
+                <motion.span
+                  className="inline-block"
+                  whileHover={{ x: 4 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                >
+                  →
+                </motion.span>
+              </button>
+            </motion.div>
           </motion.div>
+        </div>
 
-          {/* Steps grid (staggered) */}
+        <div className="w-full relative">
           <motion.div
-            className="relative"
-            variants={gridWrap}
+            className="flex overflow-x-auto gap-6 pl-8 pr-6 md:pl-16 md:pr-12 lg:pl-24 lg:pr-16 pb-12 pt-4 snap-x snap-mandatory scroll-smooth scroll-pl-8 md:scroll-pl-16 lg:scroll-pl-24 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            variants={rowWrap}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, amount: 0.25 }}
-            data-scroll
-            data-scroll-speed="0.3"
+            viewport={{ once: true, amount: 0.15 }}
           >
-            {/* Connector line (desktop) with reveal */}
-            <div className="hidden md:block absolute left-0 right-0 top-8">
+            {steps.map((step, index) => (
               <motion.div
-                initial={{ scaleX: 0, opacity: 0 }}
-                whileInView={{ scaleX: 1, opacity: 1 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 1.2, ease: easeLuxury }}
-                className="origin-center h-px w-full bg-gradient-to-r from-transparent via-border to-transparent"
-              />
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-5">
-              {steps.map((item) => (
+                key={index}
+                custom={index}
+                variants={stepCard}
+                className="flex-none w-[280px] md:w-[320px] lg:w-[380px] snap-start group cursor-pointer"
+              >
                 <motion.div
-                  key={item.step}
-                  variants={stepIn}
-                  className="group relative"
+                  className="relative w-full aspect-[4/5] overflow-hidden rounded-2xl mb-6 bg-cream border border-border/40"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.5, ease: easeOut }}
                 >
-                  <div className="relative text-center rounded-3xl border border-border/70 bg-background/55 backdrop-blur-md p-6 md:p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-700 group-hover:-translate-y-1 group-hover:shadow-[0_18px_60px_rgba(0,0,0,0.12)]">
-                    {/* Soft sheen */}
-                    <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                      <div className="absolute -inset-24 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.20),transparent_55%)]" />
-                    </div>
-
-                    {/* Step badge */}
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-accent/25 bg-accent/10 transition-colors duration-700 group-hover:bg-accent/15">
-                      <span className="font-serif text-accent font-semibold tracking-wide">
-                        {item.step}
-                      </span>
-                    </div>
-
-                    <h3 className="font-serif text-lg md:text-base lg:text-lg text-foreground font-medium tracking-tight">
-                      {item.title}
-                    </h3>
-
-                    <p className="mt-2 text-muted text-sm leading-relaxed">
-                      {item.desc}
-                    </p>
-
-                    <div className="mt-4 flex justify-center">
-                      <span className="h-1 w-10 rounded-full bg-accent/15 transition-all duration-700 group-hover:bg-accent/70 group-hover:w-12" />
-                    </div>
-                  </div>
-
-                  {/* Hover glow behind */}
-                  <div className="pointer-events-none absolute inset-0 -z-10 opacity-0 blur-2xl transition-opacity duration-700 group-hover:opacity-100">
-                    <div className="absolute inset-4 rounded-3xl bg-accent/10" />
-                  </div>
+                  <motion.img
+                    src={step.image}
+                    alt={step.title}
+                    className="w-full h-full object-cover"
+                    whileHover={{ scale: 1.08 }}
+                    transition={{ duration: 0.75, ease: easeOut }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
                 </motion.div>
-              ))}
-            </div>
-          </motion.div>
 
-          {/* Bottom hint */}
-          <motion.div
-            initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{ duration: 1.15, ease: easeLuxury, delay: 0.1 }}
-            className="mt-12 flex justify-center"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/55 px-4 py-2 text-xs text-muted backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)]" >
-              <span className="h-1.5 w-1.5 rounded-full bg-accent/70" />
-              Crafted with intention, delivered with care
-            </div>
+                <div className="flex gap-4">
+                  <div className="text-xs font-semibold tracking-[0.12em] text-accent mt-1.5 tabular-nums">
+                    {step.num}
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2 tracking-tight">
+                      {step.title}
+                    </h3>
+                    <p className="text-muted text-sm leading-relaxed pr-4">
+                      {step.desc}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+
+            <div
+              className="flex-none w-px shrink-0 md:w-6 lg:w-10"
+              aria-hidden
+            />
           </motion.div>
         </div>
       </section>

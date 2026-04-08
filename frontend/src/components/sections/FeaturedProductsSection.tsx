@@ -1,18 +1,18 @@
-import React from "react";
+"use client";
+
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
-
-const easeOut = [0.16, 1, 0.3, 1] as const;
+import { supabase, type Product } from "@/lib/supabase";
 
 const easeLuxury = [0.22, 1, 0.36, 1] as const;
-// smoother, luxury cubic-bezier
 
 const container: Variants = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.25, // slower stagger
+      staggerChildren: 0.25,
       delayChildren: 0.2,
     },
   },
@@ -24,41 +24,55 @@ const fadeUp: Variants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 1.2, // slower reveal
+      duration: 1.2,
       ease: easeLuxury,
     },
   },
 };
+
+const PRODUCTS_MAX = 8;
+const PLACEHOLDER = "/logo/logo-red.png";
+
+/** Mobile (below sm): one full card + ~2.25rem peek of next */
+const CARD_WIDTH_MOBILE =
+  "w-[calc(100vw-3rem-0.5rem-2.25rem)] max-sm:min-w-0";
+const CARD_WIDTH_SM =
+  "sm:w-[calc((100vw-3rem-1rem)/3)]";
+const CARD_WIDTH_LG = "lg:w-[calc((100vw-4rem-3rem)/5)]";
+const CARD_WIDTH_ALL = `${CARD_WIDTH_MOBILE} ${CARD_WIDTH_SM} ${CARD_WIDTH_LG}`;
+
 export default function FeaturedProductsSection() {
-  const products = [
-    {
-      src: "/product/product-1.jpeg",
-      title: "Signature Hamper Collection",
-      desc: "Luxurious personalized gift baskets",
-    },
-    {
-      src: "/product/product-2.jpeg",
-      title: "Artisan Gift Curation",
-      desc: "Thoughtfully curated premium gifts",
-    },
-    {
-      src: "/product/product-3.jpeg",
-      title: "Premium Baby Essentials",
-      desc: "Gentle gifts for new beginnings",
-    },
-    {
-      src: "/product/product-4.jpeg",
-      title: "Corporate Gift Selection",
-      desc: "Professional branded merchandise",
-    },
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(PRODUCTS_MAX);
+
+    if (!error && data) {
+      setProducts(data as Product[]);
+    } else {
+      setProducts([]);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const showCarousel = !loading && products.length > 0;
 
   return (
-    <section id="products" className="py-24 lg:py-32 px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Animation */}
+    <section id="products" className="py-24 lg:py-32">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <motion.div
-          className="text-center mb-20"
+          className="text-center mb-16"
           variants={container}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -68,71 +82,105 @@ export default function FeaturedProductsSection() {
             variants={fadeUp}
             className="font-serif text-4xl md:text-5xl text-foreground mb-5 font-semibold tracking-tight"
           >
-            Our Creations
+            For Every Moment Worth Celebrating
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="text-muted text-lg max-w-2xl mx-auto leading-relaxed"
           >
-            Handcrafted with love, designed to create unforgettable moments
+            Handcrafted with love, designed to create lasting impressions.
           </motion.p>
         </motion.div>
+      </div>
 
-        {/* Product Grid Animation */}
-        <motion.div
-          className="grid md:grid-cols-2 gap-8 lg:gap-10"
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {products.map((product, index) => (
-            <motion.div key={index} variants={fadeUp}>
-              <Link
-                href={`/products/${index + 1}`}
-                className="group overflow-hidden rounded-2xl border border-border hover:border-accent/30 transition-all duration-300 hover:shadow-2xl bg-background block"
-              >
-                <div className="relative h-[350px] lg:h-[420px] overflow-hidden">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.6, ease: easeOut }}
-                    className="absolute inset-0"
-                  >
-                    <Image
-                      src={product.src}
-                      alt={product.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </motion.div>
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 to-transparent" />
-                </div>
-
-                <div className="p-8 space-y-3">
-                  <h3 className="font-serif text-2xl text-foreground font-medium group-hover:text-accent transition-colors duration-300">
-                    {product.title}
-                  </h3>
-
-                  <p className="text-muted text-[15px] leading-relaxed">
-                    {product.desc}
-                  </p>
-
-                  <div className="pt-2">
-                    <motion.span
-                      whileHover={{ x: 6 }}
-                      transition={{ duration: 0.25 }}
-                      className="text-accent text-sm font-medium inline-flex items-center gap-2"
-                    >
-                      Explore Collection →
-                    </motion.span>
+      <div className="w-full px-6 lg:px-8">
+        {loading && (
+          <div className="flex gap-2 lg:gap-3 overflow-hidden pb-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className={`snap-start shrink-0 ${CARD_WIDTH_ALL}`}>
+                <div className="rounded-2xl border border-border/40 overflow-hidden bg-white/40 animate-pulse">
+                  <div className="aspect-[4/5] bg-border/50" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-border/60 rounded w-3/4" />
+                    <div className="h-3 bg-border/40 rounded w-full" />
                   </div>
                 </div>
-              </Link>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && products.length === 0 && (
+          <p className="text-center text-muted text-sm py-8 max-w-md mx-auto">
+            Our catalogue is being updated. Visit the{" "}
+            <Link href="/products" className="text-accent font-medium hover:underline">
+              products page
+            </Link>{" "}
+            to see everything we offer.
+          </p>
+        )}
+
+        {showCarousel && (
+          <>
+            <p className="text-xs text-muted mb-3 sm:hidden">
+              Swipe for more
+            </p>
+            <motion.div
+              className="flex gap-2 lg:gap-3 overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              variants={container}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.15 }}
+            >
+              {products.map((product) => {
+                const id = product.id;
+                if (id == null) return null;
+                const src = product.image_url?.trim() || PLACEHOLDER;
+                const remote = src.startsWith("http");
+
+                return (
+                  <motion.div
+                    key={id}
+                    variants={fadeUp}
+                    className={`snap-start shrink-0 ${CARD_WIDTH_ALL}`}
+                  >
+                    <Link
+                      href={`/products/${id}`}
+                      className="group flex flex-col h-full overflow-hidden border border-border/40 bg-white/40 transition-colors duration-300 hover:border-accent/25"
+                    >
+                      <div className="relative aspect-[4/5] w-full overflow-hidden">
+                        <Image
+                          src={src}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 32vw, 19vw"
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                          unoptimized={remote}
+                        />
+                        <div className="absolute inset-0 bg-black/[0.06] group-hover:bg-transparent transition-colors duration-500" />
+                      </div>
+
+                      <div className="px-3 py-4 lg:px-4 lg:py-5 space-y-1.5 flex-1 flex flex-col">
+                        {product.category ? (
+                          <p className="text-[10px] font-medium tracking-[0.12em] uppercase text-accent line-clamp-1">
+                            {product.category}
+                          </p>
+                        ) : null}
+                        <h3 className="text-foreground text-sm lg:text-base font-semibold leading-snug tracking-tight group-hover:text-accent transition-colors duration-300 line-clamp-2">
+                          {product.name}
+                        </h3>
+                        <p className="text-muted text-xs lg:text-sm leading-relaxed line-clamp-2">
+                          {product.description}
+                        </p>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </motion.div>
-          ))}
-        </motion.div>
+          </>
+        )}
       </div>
     </section>
   );
