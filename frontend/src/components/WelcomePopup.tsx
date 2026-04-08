@@ -3,18 +3,24 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MessageCircle, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { X, ArrowRight } from "lucide-react";
 
 interface WelcomePopupProps {
   onClose: () => void;
+  name: string;
+  description: string;
+  imageUrl: string;
 }
 
-export default function WelcomePopup({ onClose }: WelcomePopupProps) {
+export default function WelcomePopup({
+  onClose,
+  name,
+  description,
+  imageUrl,
+}: WelcomePopupProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Small delay before showing so page has rendered
     const t = setTimeout(() => setVisible(true), 800);
     return () => clearTimeout(t);
   }, []);
@@ -24,11 +30,15 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
     setTimeout(onClose, 300);
   };
 
+  const handleBrowseMore = () => {
+    setVisible(false);
+    onClose();
+  };
+
   return (
     <AnimatePresence>
       {visible && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
@@ -36,85 +46,64 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={handleClose}
-            className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[100]"
           />
 
-          {/* Popup */}
           <motion.div
             key="popup"
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            initial={{ opacity: 0, scale: 0.96, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 10 }}
-            transition={{ type: "spring", stiffness: 300, damping: 28 }}
-            className="fixed inset-0 flex items-center justify-center z-[101] px-4"
+            exit={{ opacity: 0, scale: 0.98, y: 10 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-0 flex items-center justify-center z-[101] px-3 sm:px-6 py-8"
           >
-            <div className="relative w-full max-w-sm bg-background rounded-3xl shadow-2xl overflow-hidden border border-border/30">
-              {/* Close button */}
+            <div className="relative w-full max-w-4xl max-h-[min(85vh,640px)] min-h-[min(75vh,520px)] rounded-3xl shadow-2xl overflow-hidden border border-border/20">
               <button
+                type="button"
                 onClick={handleClose}
-                className="absolute top-4 right-4 z-10 p-1.5 rounded-full bg-white/80 hover:bg-white text-muted hover:text-foreground transition-all duration-200 shadow-sm"
+                className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/35 hover:bg-black/50 text-white backdrop-blur-sm transition-all duration-200"
+                aria-label="Close"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
 
-              {/* Top image band */}
-              <div className="relative h-44 w-full bg-[#f8f7f4]">
+              <div className="absolute inset-0">
                 <Image
-                  src="/logo/logo-red.png"
-                  alt="Custom at Suka"
+                  src={imageUrl}
+                  alt={name.trim() || "Popup"}
                   fill
-                  className="object-contain p-8"
+                  className="object-cover"
                   priority
+                  sizes="(max-width: 896px) 100vw, 896px"
                 />
-                {/* Decorative dots */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
-                </div>
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent sm:from-black/65 sm:via-black/30"
+                  aria-hidden
+                />
               </div>
 
-              {/* Content */}
-              <div className="px-7 py-6 space-y-4">
-                <div className="space-y-1.5">
-                  <h2 className="text-xl font-semibold text-foreground tracking-tight">
-                    Welcome to Custom at Suka ✨
-                  </h2>
-                  <p className="text-sm text-muted leading-relaxed">
-                    Thoughtfully crafted gifts & hampers, made with love and intention — just for you.
-                  </p>
-                </div>
+              <div className="relative z-10 h-full min-h-[min(75vh,520px)] flex items-center justify-start px-8 sm:px-12 md:px-14 lg:px-16 py-10">
+                <div className="max-w-[min(100%,22rem)] sm:max-w-md space-y-5 text-left">
+                  {name.trim() ? (
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight drop-shadow-md [text-shadow:0_2px_24px_rgba(0,0,0,0.35)]">
+                      {name.trim()}
+                    </h2>
+                  ) : null}
+                  {description.trim() ? (
+                    <p className="text-sm sm:text-base text-white/95 leading-relaxed drop-shadow-md [text-shadow:0_1px_16px_rgba(0,0,0,0.4)]">
+                      {description.trim()}
+                    </p>
+                  ) : null}
 
-                <div className="space-y-2.5 pt-1">
-                  {/* WhatsApp CTA */}
-                  <a
-                    href="https://wa.me/1234567890"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full bg-accent text-white py-3 rounded-2xl text-sm font-medium hover:bg-accent/90 hover:shadow-md transition-all duration-300"
+                  <button
+                    type="button"
+                    onClick={handleBrowseMore}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-semibold text-foreground shadow-lg hover:bg-white/95 hover:shadow-xl transition-all duration-300"
                   >
-                    <MessageCircle className="w-4 h-4" />
-                    Chat with Us on WhatsApp
-                  </a>
-
-                  {/* Explore CTA */}
-                  <Link
-                    href="/products"
-                    onClick={handleClose}
-                    className="flex items-center justify-center gap-2 w-full border border-border/60 text-foreground py-3 rounded-2xl text-sm font-medium hover:border-accent/50 hover:text-accent transition-all duration-200"
-                  >
-                    Explore Our Creations
+                    Browse more
                     <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  </button>
                 </div>
-
-                {/* Dismiss */}
-                <button
-                  onClick={handleClose}
-                  className="w-full text-xs text-muted/60 hover:text-muted transition-colors duration-200 pt-1"
-                >
-                  Maybe later
-                </button>
               </div>
             </div>
           </motion.div>

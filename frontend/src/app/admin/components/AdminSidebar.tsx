@@ -4,11 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Package, Image as ImageIcon, LogOut } from "lucide-react";
+import { Package, Image as ImageIcon, PanelTop, LogOut } from "lucide-react";
 
 const navItems = [
   { label: "Products", href: "/admin", icon: Package },
   { label: "Banners", href: "/admin/banners", icon: ImageIcon },
+  { label: "Popup", href: "/admin/popup", icon: PanelTop },
 ];
 
 export default function AdminSidebar() {

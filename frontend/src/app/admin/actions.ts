@@ -150,3 +150,46 @@ export async function updateBanner(
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+// ─── Site popup (table `popups`, single row; expects primary key `id`) ─
+
+export async function upsertPopup(data: {
+  name: string;
+  description: string;
+  image_url: string;
+}) {
+  const { data: existing } = await supabaseAdmin
+    .from("popups")
+    .select("id, image_url")
+    .order("id", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const payload = {
+    name: data.name.trim(),
+    description: data.description.trim(),
+    image_url: data.image_url.trim(),
+  };
+
+  if (existing?.id != null) {
+    const { error } = await supabaseAdmin
+      .from("popups")
+      .update(payload)
+      .eq("id", existing.id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabaseAdmin.from("popups").insert(payload);
+    if (error) throw new Error(error.message);
+  }
+
+  const oldUrl = existing?.image_url as string | undefined;
+  const newUrl = payload.image_url;
+  if (oldUrl && newUrl && oldUrl !== newUrl) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const bucketPrefix = `${supabaseUrl}/storage/v1/object/public/images/`;
+    if (oldUrl.startsWith(bucketPrefix)) {
+      const fileName = oldUrl.replace(bucketPrefix, "");
+      await supabaseAdmin.storage.from("images").remove([fileName]);
+    }
+  }
+}
