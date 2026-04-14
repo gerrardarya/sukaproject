@@ -74,7 +74,7 @@ export default function PhilosophySection() {
           <motion.h2
             custom={1}
             variants={fadeUp}
-            className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground font-semibold tracking-tight"
+            className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground font-normal tracking-tight"
           >
             Why Custom at Suka?
           </motion.h2>

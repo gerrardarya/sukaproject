@@ -1,12 +1,16 @@
 import { notFound } from "next/navigation";
 import ProductDetail from "@/components/feature/product/components/ProductDetail";
-import { supabase } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
 }
 
 export async function generateStaticParams() {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
   const { data } = await supabase
     .from("products")
     .select("id")

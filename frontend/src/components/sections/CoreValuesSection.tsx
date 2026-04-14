@@ -6,7 +6,7 @@ export default function CoreValuesSection() {
     <section className="py-24 lg:py-32 px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-20">
-          <h2 className="font-serif text-4xl md:text-5xl text-foreground mb-5 font-semibold tracking-tight">
+          <h2 className="font-serif text-4xl md:text-5xl text-foreground mb-5 font-normal tracking-tight">
             Core Values
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto leading-relaxed">
@@ -35,7 +35,7 @@ export default function CoreValuesSection() {
               <div className="text-4xl mb-2 group-hover:scale-110 transition-transform duration-300">
                 {value.icon}
               </div>
-              <h3 className="font-serif text-2xl text-foreground font-medium">
+              <h3 className="font-serif text-2xl text-foreground font-normal">
                 {value.title}
               </h3>
               <p className="text-muted leading-relaxed text-[15px]">

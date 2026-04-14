@@ -46,7 +46,7 @@ const socialItems = [
   { label: "Instagram", link: "https://www.instagram.com/custom.at.suka/" },
 ];
 
-export default function Header() {
+export default function Header({ transparentOnTop = false }: { transparentOnTop?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -59,7 +59,8 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isOpaque = scrolled || hovered;
+  // Always opaque on pages that don't opt-in to transparent hero behavior
+  const isOpaque = !transparentOnTop || scrolled || hovered;
 
   const handleMenuEnter = (label: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);

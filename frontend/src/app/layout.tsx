@@ -1,17 +1,24 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Gloock, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import RootLayoutClient from "@/components/RootLayoutClient";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const gloock = Gloock({
+  variable: "--font-gloock",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const hankenGrotesk = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Custom at Suka - Custom Suka Suka dan bikin",
+  title: "Custom at Suka — Thoughtful Hampers & Custom Gifts",
   description:
     "Premium gifting and hampers brand creating art through thoughtful, personalized gifts. Signature hampers, baby hampers, and corporate merchandise.",
 };
@@ -22,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${poppins.variable} antialiased`}>
+    <html lang="id">
+      <body className={`${gloock.variable} ${hankenGrotesk.variable} antialiased`}>
         <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>

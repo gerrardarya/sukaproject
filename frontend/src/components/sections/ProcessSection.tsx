@@ -110,7 +110,7 @@ export default function ProcessSection() {
               </motion.span>
               <motion.h2
                 variants={fadeUpSoft}
-                className="font-serif text-4xl md:text-5xl lg:text-6xl text-foreground font-semibold tracking-tight leading-tight mb-6 md:mb-0"
+                className="font-serif text-4xl md:text-5xl lg:text-6xl text-foreground font-normal tracking-tight leading-tight mb-6 md:mb-0"
               >
                 The art of <br className="hidden md:block" />
                 creating.

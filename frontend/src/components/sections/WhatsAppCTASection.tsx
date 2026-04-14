@@ -77,7 +77,7 @@ export default function WhatsAppCTASection() {
           viewport={{ once: true, amount: 0.4 }}
           variants={fadeUp(0)}
         >
-          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground font-semibold tracking-tight max-w-xl">
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground font-normal tracking-tight max-w-xl">
             Tell us your story. We'll create the art.
           </h2>
         </motion.div>

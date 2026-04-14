@@ -96,7 +96,7 @@ export default function LinkTreePage() {
             />
           </div>
 
-          <h1 className="font-serif text-3xl text-foreground font-semibold tracking-tight">
+          <h1 className="font-serif text-3xl text-foreground font-normal tracking-tight">
             Custom at Suka
           </h1>
 

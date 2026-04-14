@@ -10,7 +10,7 @@ export default function InstagramGallerySection() {
           <div className="inline-block mb-4">
             <span className="text-accent text-sm font-medium tracking-wider uppercase">Follow Our Journey</span>
           </div>
-          <h2 className="font-serif text-4xl md:text-5xl text-foreground mb-5 font-semibold tracking-tight">
+          <h2 className="font-serif text-4xl md:text-5xl text-foreground mb-5 font-normal tracking-tight">
             @custom.at.suka
           </h2>
           <p className="text-muted text-lg max-w-2xl mx-auto leading-relaxed mb-8">
@@ -20,7 +20,7 @@ export default function InstagramGallerySection() {
             href="https://www.instagram.com/custom.at.suka/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-medium hover:shadow-lg hover:scale-[1.02] transition-all duration-300"
+            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3 rounded-full font-medium hover:bg-foreground/85 transition-all duration-300"
           >
             <Instagram className="w-5 h-5" />
             Follow on Instagram

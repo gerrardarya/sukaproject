@@ -80,7 +80,7 @@ export default function FeaturedProductsSection() {
         >
           <motion.h2
             variants={fadeUp}
-            className="font-serif text-4xl md:text-5xl text-foreground mb-5 font-semibold tracking-tight"
+            className="font-serif text-4xl md:text-5xl text-foreground mb-5 font-normal tracking-tight"
           >
             For Every Moment Worth Celebrating
           </motion.h2>

@@ -106,7 +106,7 @@ export default function PreLoader({ onLoadingComplete }: PreLoaderProps) {
                   ease: "easeInOut",
                   delay: 1.2,
                 }}
-                className="font-serif text-2xl text-foreground font-medium tracking-tight"
+                className="font-serif text-2xl text-foreground font-normal tracking-tight"
               >
                 Premium Gifting
               </motion.h2>
