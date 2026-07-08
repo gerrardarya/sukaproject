@@ -22,6 +22,7 @@ export default function NewBannerPage() {
   const [form, setForm] = useState({
     title: "",
     description: "",
+    button_text: "Create Yours Now!",
     image_url: "",
     is_active: true,
     sort_order: 1,
@@ -100,6 +101,7 @@ export default function NewBannerPage() {
       await createBanner({
         title: form.title,
         description: form.description.trim(),
+        button_text: form.button_text.trim() || "Create Yours Now!",
         image_url,
         is_active: form.is_active,
         sort_order: Number(form.sort_order),
@@ -234,6 +236,23 @@ export default function NewBannerPage() {
                   className="w-full px-4 py-3 rounded-xl border border-border/60 bg-[#f8f7f4] text-foreground placeholder:text-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all duration-200 resize-y min-h-[88px]"
                 />
                 <p className="text-xs text-muted">Optional — appears below the title on the storefront hero</p>
+              </div>
+
+              {/* Button Text */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="button_text">
+                  Button Text
+                </label>
+                <input
+                  id="button_text"
+                  name="button_text"
+                  type="text"
+                  value={form.button_text}
+                  onChange={handleChange}
+                  placeholder="Create Yours Now!"
+                  className="w-full px-4 py-3 rounded-xl border border-border/60 bg-[#f8f7f4] text-foreground placeholder:text-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all duration-200"
+                />
+                <p className="text-xs text-muted">CTA button label shown on the hero slide</p>
               </div>
 
               {/* Sort Order */}

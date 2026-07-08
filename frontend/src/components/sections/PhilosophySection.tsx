@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Heart, Sparkles, Handshake, Gift, Star, Award } from "lucide-react";
+import { Heart, Sparkles, Handshake, Star } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const easeLuxury = [0.22, 1, 0.36, 1] as const;
 
@@ -36,22 +38,25 @@ const principles = [
   },
 ];
 
-// Client logos — replace with real logo paths or names
-const clients = [
-  { name: "Tokopedia", logo: "/clients/tokopedia.png" },
-  { name: "Gojek", logo: "/clients/gojek.png" },
-  { name: "BCA", logo: "/clients/bca.png" },
-  { name: "Mandiri", logo: "/clients/mandiri.png" },
-  { name: "Telkom", logo: "/clients/telkom.png" },
-  { name: "Unilever", logo: "/clients/unilever.png" },
-  { name: "Grab", logo: "/clients/grab.png" },
-  { name: "Samsung", logo: "/clients/samsung.png" },
-];
-
-// Duplicate for seamless loop
-const ticker = [...clients, ...clients];
+type Client = {
+  id: number;
+  name: string;
+  logo_url: string | null;
+};
 
 export default function PhilosophySection() {
+  const [clients, setClients] = useState<Client[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("clients")
+      .select("id, name, logo_url")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) setClients(data);
+      });
+  }, []);
   return (
     <section id="philosophy" className="py-24 lg:py-32 bg-[#f8f7f4]">
 
@@ -110,41 +115,81 @@ export default function PhilosophySection() {
       </div>
 
       {/* ── Client Ticker ── */}
-      <div className="mt-24 border-t border-b border-border/30 py-10 overflow-hidden">
-        {/* Label */}
-        <p className="text-center text-xs font-medium tracking-widest uppercase text-muted/60 mb-8">
-          Trusted by
-        </p>
+      {clients.length > 0 && (
+        <div
+          id="clients"
+          className="mt-24 border-t border-b border-border/30 py-10 overflow-hidden scroll-mt-24"
+        >
+          {/* Label */}
+          <p className="text-center text-xs font-medium tracking-widest uppercase text-muted/60 mb-8">
+            Trusted by
+          </p>
 
-        {/* Scrolling track */}
-        <div className="relative flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-          <motion.div
-            className="flex gap-12 items-center"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{
-              duration: 22,
-              ease: "linear",
-              repeat: Infinity,
-            }}
-          >
-            {ticker.map((client, i) => (
+          {/* Scrolling track — two identical rows animate together for a seamless loop.
+              The client list is repeated until each row is wider than the viewport,
+              and each row carries a trailing pr-12 so the seam matches the gap. */}
+          <div className="flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+            {[0, 1].map((copy) => (
               <div
-                key={i}
-                className="flex items-center justify-center flex-shrink-0 min-w-[120px] opacity-50 hover:opacity-90 transition-opacity duration-300"
+                key={copy}
+                aria-hidden={copy === 1}
+                className="flex gap-12 pr-12 items-center shrink-0"
+                style={{
+                  animation: `ticker-scroll ${
+                    Math.max(1, Math.ceil(10 / clients.length)) *
+                    clients.length *
+                    2.5
+                  }s linear infinite`,
+                }}
               >
-                {/* Try image, fallback to styled text */}
-                <ClientLogo name={client.name} logo={client.logo} />
+                {Array.from({
+                  length: Math.max(1, Math.ceil(10 / clients.length)),
+                })
+                  .flatMap(() => clients)
+                  .map((client, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-center flex-shrink-0 min-w-[120px] opacity-50 hover:opacity-90 transition-opacity duration-300"
+                    >
+                      <ClientLogo name={client.name} logo={client.logo_url} />
+                    </div>
+                  ))}
               </div>
             ))}
-          </motion.div>
+          </div>
+
+          <style>{`
+            @keyframes ticker-scroll {
+              from { transform: translateX(0); }
+              to   { transform: translateX(-100%); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              @keyframes ticker-scroll {
+                from, to { transform: translateX(0); }
+              }
+            }
+          `}</style>
         </div>
-      </div>
+      )}
 
     </section>
   );
 }
 
-function ClientLogo({ name, logo }: { name: string; logo: string }) {
+function ClientLogo({ name, logo }: { name: string; logo: string | null }) {
+  if (logo) {
+    return (
+      <div className="relative h-8 w-24">
+        <Image
+          src={logo}
+          alt={name}
+          fill
+          className="object-contain"
+          sizes="96px"
+        />
+      </div>
+    );
+  }
   return (
     <span className="text-sm font-semibold text-foreground/60 tracking-wide whitespace-nowrap flex items-center gap-2">
       <Star className="w-3 h-3 text-accent/50" strokeWidth={2} />

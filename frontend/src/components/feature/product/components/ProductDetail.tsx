@@ -3,9 +3,16 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Forum, Cormorant_Garamond } from "next/font/google";
 import { ArrowLeft, MessageCircle, ChevronRight, Package, Sparkles } from "lucide-react";
 import Header from "../../../Header";
 import Footer from "../../../Footer";
+
+const forum = Forum({ subsets: ["latin"], weight: "400" });
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export type ProductDetailData = {
   id: number;
@@ -14,6 +21,13 @@ export type ProductDetailData = {
   category: string;
   price?: number;
   images: string[];
+};
+
+export type RelatedProduct = {
+  id: number;
+  name: string;
+  price: number;
+  imageUrl: string;
 };
 
 function formatPrice(value: number) {
@@ -25,7 +39,13 @@ function formatPrice(value: number) {
   }).format(value);
 }
 
-export default function ProductDetail({ product }: { product: ProductDetailData }) {
+export default function ProductDetail({
+  product,
+  relatedProducts = [],
+}: {
+  product: ProductDetailData;
+  relatedProducts?: RelatedProduct[];
+}) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const mainSrc = product.images[selectedImageIndex] ?? product.images[0];
   const showThumbs = product.images.length > 1;
@@ -35,11 +55,20 @@ export default function ProductDetail({ product }: { product: ProductDetailData 
   );
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4]">
+    <div className="min-h-screen flex flex-col bg-[#f8f7f4]">
       <Header />
 
-      <main className="pt-24 pb-24 px-6 lg:px-10">
+      <main className="flex-1 pt-24 pb-24 px-6 lg:px-10">
         <div className="max-w-5xl mx-auto">
+
+          {/* Back button */}
+          <Link
+            href="/products"
+            className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-foreground transition-colors duration-200"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to catalogue
+          </Link>
 
           {/* Breadcrumb */}
           <nav className="mb-10 flex items-center gap-1.5 text-xs text-muted">
@@ -58,7 +87,7 @@ export default function ProductDetail({ product }: { product: ProductDetailData 
 
             {/* ── Left: Image gallery ── */}
             <div className="space-y-3">
-              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-border/40 bg-white shadow-[0_4px_32px_0_rgba(0,0,0,0.06)]">
+              <div className="relative aspect-[4/5] overflow-hidden border border-border/40 bg-white">
                 <Image
                   src={mainSrc}
                   alt={product.name}
@@ -78,9 +107,9 @@ export default function ProductDetail({ product }: { product: ProductDetailData 
                       type="button"
                       onClick={() => setSelectedImageIndex(index)}
                       className={[
-                        "relative shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden border-2 transition-all duration-200",
+                        "relative shrink-0 w-[72px] h-[72px] overflow-hidden border-2 transition-all duration-200",
                         selectedImageIndex === index
-                          ? "border-accent shadow-sm"
+                          ? "border-accent"
                           : "border-transparent opacity-60 hover:opacity-100 hover:border-accent/40",
                       ].join(" ")}
                     >
@@ -101,17 +130,10 @@ export default function ProductDetail({ product }: { product: ProductDetailData 
             {/* ── Right: Product info (sticky on desktop) ── */}
             <div className="lg:sticky lg:top-28 space-y-0">
 
-              {/* Category badge */}
-              {product.category && (
-                <div className="mb-5">
-                  <span className="inline-block text-[10px] font-semibold tracking-[0.2em] uppercase text-accent bg-accent/10 px-3 py-1.5 rounded-full">
-                    {product.category}
-                  </span>
-                </div>
-              )}
-
               {/* Product name */}
-              <h1 className="text-foreground text-2xl lg:text-[1.8rem] font-semibold tracking-tight leading-[1.25] mb-5">
+              <h1
+                className={`${forum.className} text-foreground text-3xl lg:text-[2.4rem] font-normal tracking-tight leading-[1.25] mb-5`}
+              >
                 {product.name}
               </h1>
 
@@ -133,7 +155,9 @@ export default function ProductDetail({ product }: { product: ProductDetailData 
 
               {/* Description */}
               <div className="mb-6">
-                <h2 className="text-foreground text-xs font-semibold tracking-[0.12em] uppercase mb-3 opacity-50">
+                <h2
+                  className={`${cormorantGaramond.className} text-foreground text-base font-bold tracking-[0.12em] uppercase mb-3`}
+                >
                   About this piece
                 </h2>
                 <p className="text-muted text-sm lg:text-[0.9rem] leading-[1.8] whitespace-pre-line">
@@ -166,15 +190,6 @@ export default function ProductDetail({ product }: { product: ProductDetailData 
                 Order via WhatsApp
               </a>
 
-              {/* Secondary CTA */}
-              <Link
-                href="/products"
-                className="mt-3 flex items-center justify-center gap-2 w-full border border-border/70 text-muted px-6 py-3 rounded-2xl text-sm font-medium hover:border-foreground/20 hover:text-foreground transition-colors duration-200"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Back to catalogue
-              </Link>
-
               {/* Footer note */}
               <p className="text-muted/60 text-[11px] leading-relaxed text-center mt-5 px-2">
                 Have questions about customization, timing, or availability?<br />
@@ -182,6 +197,45 @@ export default function ProductDetail({ product }: { product: ProductDetailData 
               </p>
             </div>
           </div>
+
+          {/* ── You may also like ── */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-20 lg:mt-28">
+              <h2 className="text-foreground text-xl lg:text-2xl font-semibold tracking-tight mb-8">
+                You may also like
+              </h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                {relatedProducts.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/products/${item.id}`}
+                    className="group block border border-border/60 bg-white overflow-hidden transition-all duration-300 hover:border-accent/35 hover:bg-accent/[0.03]"
+                  >
+                    <div className="relative aspect-[4/5] bg-[#f0efea] overflow-hidden">
+                      <Image
+                        src={item.imageUrl || "/logo/logo-red.png"}
+                        alt={item.name}
+                        fill
+                        sizes="(max-width: 1024px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                        unoptimized={item.imageUrl.startsWith("http")}
+                      />
+                    </div>
+                    <div className="p-4 space-y-1.5">
+                      <h3 className="text-foreground text-sm font-semibold tracking-tight leading-snug line-clamp-1 group-hover:text-accent transition-colors duration-200">
+                        {item.name}
+                      </h3>
+                      {item.price > 0 ? (
+                        <p className="text-foreground/80 text-sm font-medium">
+                          {formatPrice(item.price)}
+                        </p>
+                      ) : null}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </main>
 

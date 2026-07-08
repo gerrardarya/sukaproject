@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { deleteBanner, toggleBannerActive } from "../actions";
+import { deleteBanner, toggleBannerActive, reorderBanners } from "../actions";
 import AdminSidebar from "../components/AdminSidebar";
-import { Plus, ToggleLeft, ToggleRight, Trash2, Pencil, ImageIcon } from "lucide-react";
+import { Plus, ToggleLeft, ToggleRight, Trash2, Pencil, ImageIcon, GripVertical } from "lucide-react";
 
 type Banner = {
   id: number;
@@ -22,13 +22,17 @@ export default function BannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const dragIndexRef = useRef<number | null>(null);
+  const orderChangedRef = useRef(false);
 
   const fetchBanners = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("banners")
       .select("*")
-      .order("sort_order", { ascending: true });
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true });
 
     if (!error && data) setBanners(data);
     setLoading(false);
@@ -41,6 +45,45 @@ export default function BannersPage() {
   const handleToggleActive = async (banner: Banner) => {
     await toggleBannerActive(banner.id, !banner.is_active);
     fetchBanners();
+  };
+
+  const handleDragStart = (index: number) => {
+    dragIndexRef.current = index;
+    orderChangedRef.current = false;
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    const from = dragIndexRef.current;
+    if (from === null || from === index) return;
+
+    setBanners((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(index, 0, moved);
+      return next;
+    });
+    dragIndexRef.current = index;
+    orderChangedRef.current = true;
+  };
+
+  const handleDragEnd = async () => {
+    dragIndexRef.current = null;
+    if (!orderChangedRef.current) return;
+    orderChangedRef.current = false;
+
+    setSavingOrder(true);
+    try {
+      await reorderBanners(banners.map((b) => b.id));
+      // Reflect the persisted order locally without a full refetch
+      setBanners((prev) =>
+        prev.map((b, i) => ({ ...b, sort_order: i + 1 }))
+      );
+    } catch {
+      // Persisting failed — reload the real order from the database
+      await fetchBanners();
+    }
+    setSavingOrder(false);
   };
 
   const handleDelete = async (id: number) => {
@@ -60,7 +103,12 @@ export default function BannersPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">Banners</h1>
-            <p className="text-sm text-muted mt-1">{banners.length} total banners</p>
+            <p className="text-sm text-muted mt-1">
+              {banners.length} total banners · drag rows to reorder
+              {savingOrder && (
+                <span className="ml-2 text-accent">Saving order…</span>
+              )}
+            </p>
           </div>
           <Link
             href="/admin/banners/new"
@@ -87,6 +135,7 @@ export default function BannersPage() {
             <table className="w-full text-sm">
               <thead className="bg-[#f8f7f4] border-b border-border/40">
                 <tr>
+                  <th className="w-10 px-3 py-3.5" aria-label="Drag to reorder" />
                   <th className="text-left px-5 py-3.5 text-xs font-medium text-muted uppercase tracking-wide">Banner</th>
                   <th className="text-left px-5 py-3.5 text-xs font-medium text-muted uppercase tracking-wide">Title</th>
                   <th className="text-left px-5 py-3.5 text-xs font-medium text-muted uppercase tracking-wide max-w-[220px]">Description</th>
@@ -96,8 +145,19 @@ export default function BannersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
-                {banners.map((banner) => (
-                  <tr key={banner.id} className="hover:bg-[#f8f7f4]/50 transition-colors">
+                {banners.map((banner, index) => (
+                  <tr
+                    key={banner.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => e.preventDefault()}
+                    onDragEnd={handleDragEnd}
+                    className="hover:bg-[#f8f7f4]/50 transition-colors"
+                  >
+                    <td className="px-3 py-4 cursor-grab active:cursor-grabbing text-muted/40 hover:text-muted">
+                      <GripVertical className="w-4 h-4" />
+                    </td>
                     <td className="px-5 py-4">
                       {banner.image_url ? (
                         <div className="relative w-20 h-12 rounded-lg overflow-hidden border border-border/30 flex-shrink-0">
@@ -126,7 +186,7 @@ export default function BannersPage() {
                     </td>
                     <td className="px-5 py-4">
                       <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-border/20 text-muted">
-                        #{banner.sort_order}
+                        #{index + 1}
                       </span>
                     </td>
                     <td className="px-5 py-4">

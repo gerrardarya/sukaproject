@@ -3,7 +3,19 @@
     "allow": [
       "Bash(node .claude/skills/impeccable/scripts/cleanup-deprecated.mjs)",
       "Bash(node:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Skill(run)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/about --max-time 3)",
+      "Bash(netstat -ano)",
+      "Bash(chromium-cli *)",
+      "Bash(npm init *)",
+      "Bash(npm i *)",
+      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")",
+      "Bash(curl *)",
+      "Bash(python3 -c 'import urllib.parse,sys; print\\(urllib.parse.quote\\(sys.argv[1], safe='\\\\'''\\\\''\\)\\)' https://mgfxhcfzgndfzwsfrojw.supabase.co/storage/v1/object/public/images/1783478102886-o27o2lfszqg.jpg)",
+      "Bash(npx eslint *)",
+      "Read(//tmp/**)",
+      "Bash(python3 *)"
     ]
   }
 }

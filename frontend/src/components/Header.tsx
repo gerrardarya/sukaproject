@@ -33,9 +33,8 @@ const NAV: NavItem[] = [
   {
     label: "About Us",
     children: [
-      { label: "Our Story", href: "/#story" },
+      { label: "Our Story", href: "/about" },
       { label: "Clients", href: "/#clients" },
-      { label: "Vision & Mission", href: "/#vision" },
     ],
   },
   { label: "Contact Us", href: "/#contact" },

@@ -11,6 +11,7 @@ type Banner = {
   id: number;
   title: string;
   description?: string | null;
+  button_text?: string | null;
   image_url: string;
   is_active: boolean;
   sort_order: number;
@@ -31,7 +32,7 @@ const FALLBACK: Banner[] = [
 const INTERVAL = 5000;
 
 export default function HeroSection() {
-  const [banners, setBanners] = useState<Banner[]>(FALLBACK);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -42,9 +43,13 @@ export default function HeroSection() {
       .select("*")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
-      .then(({ data }) => {
-        if (data && data.length > 0) setBanners(data);
-      });
+      .order("id", { ascending: true })
+      .then(
+        ({ data }) => {
+          setBanners(data && data.length > 0 ? data : FALLBACK);
+        },
+        () => setBanners(FALLBACK)
+      );
   }, []);
 
   const goTo = useCallback(
@@ -79,6 +84,11 @@ export default function HeroSection() {
   };
 
   const banner = banners[current];
+
+  // Still fetching — hold a neutral placeholder so no stand-in image flashes
+  if (!banner) {
+    return <section className="relative w-full h-[100svh] bg-black" />;
+  }
 
   return (
     <section
@@ -122,7 +132,7 @@ export default function HeroSection() {
             className="max-w-xl"
           >
             {banner.title && (
-              <h1 className="text-white text-3xl md:text-5xl font-semibold tracking-tight leading-tight mb-3 md:mb-4">
+              <h1 className="font-serif text-white text-3xl md:text-5xl font-normal tracking-tight leading-tight mb-3 md:mb-4">
                 {banner.title}
               </h1>
             )}
@@ -139,7 +149,7 @@ export default function HeroSection() {
                 href="https://wa.me/1234567890"
                 className="px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition-all duration-200 shadow-md"
               >
-                Create Yours Now!
+                {banner.button_text?.trim() || "Create Yours Now!"}
               </a>
             </div>
           </motion.div>

@@ -88,7 +88,7 @@ export default function LinkTreePage() {
           <div className="mx-auto mb-4 h-24 w-24 p-4 rounded-full border border-border bg-background/60 backdrop-blur-md flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
             <Image
               src="/logo/logo-red.png"
-              alt="Premium Gifting"
+              alt="Custom at Suka"
               width={100}
               height={5}
               className="object-contain"
@@ -101,7 +101,7 @@ export default function LinkTreePage() {
           </h1>
 
           <p className="mt-3 text-sm text-foreground/70 leading-relaxed">
-            Custom Suka Suka dan bikin
+            Thoughtful hampers &amp; custom gifts
           </p>
           <p className=" text-sm text-foreground/70 leading-relaxed">
             #DreamHampers kamu jadi kenyataan

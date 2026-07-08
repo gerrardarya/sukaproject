@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { supabase, type Product } from "@/lib/supabase";
 
 const easeLuxury = [0.22, 1, 0.36, 1] as const;
@@ -44,6 +45,21 @@ const CARD_WIDTH_ALL = `${CARD_WIDTH_MOBILE} ${CARD_WIDTH_SM} ${CARD_WIDTH_LG}`;
 export default function FeaturedProductsSection() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showBackArrow, setShowBackArrow] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScrollNext = () => {
+    setShowBackArrow(true);
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: el.clientWidth * 0.8, behavior: "smooth" });
+  };
+
+  const handleScrollPrev = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: -el.clientWidth * 0.8, behavior: "smooth" });
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -123,10 +139,36 @@ export default function FeaturedProductsSection() {
 
         {showCarousel && (
           <>
-            <p className="text-xs text-muted mb-3 sm:hidden">
-              Swipe for more
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <Link
+                href="/products"
+                className="text-xs sm:text-sm font-medium text-accent hover:underline underline-offset-4"
+              >
+                See more products
+              </Link>
+              <div className="flex items-center gap-2">
+                {showBackArrow && (
+                  <button
+                    type="button"
+                    onClick={handleScrollPrev}
+                    aria-label="Show previous products"
+                    className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-white text-foreground hover:text-accent transition-colors duration-200"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleScrollNext}
+                  aria-label="Show more products"
+                  className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-white text-foreground hover:text-accent transition-colors duration-200"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
             <motion.div
+              ref={scrollRef}
               className="flex gap-2 lg:gap-3 overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               variants={container}
               initial="hidden"

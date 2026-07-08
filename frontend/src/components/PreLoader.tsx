@@ -63,7 +63,7 @@ export default function PreLoader({ onLoadingComplete }: PreLoaderProps) {
               >
                 <Image
                   src="/logo/logo-red.png"
-                  alt="Premium Gifting"
+                  alt="Custom at Suka"
                   width={120}
                   height={120}
                   className="object-contain"

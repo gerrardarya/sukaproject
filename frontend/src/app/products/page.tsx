@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -42,20 +43,49 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
   { label: "Price: High → Low", value: "price_desc" },
 ];
 
+const SORT_VALUES = SORT_OPTIONS.map((o) => o.value);
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+function ProductsPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [priceMode, setPriceMode] = useState<PriceMode>("all");
-  const [underMax, setUnderMax] = useState<number>(100_000);
-  const [rangeMin, setRangeMin] = useState("");
-  const [rangeMax, setRangeMax] = useState("");
+  // Filters — initialized from the URL so back-navigation restores them
+  const [activeCategory, setActiveCategory] = useState(
+    () => searchParams.get("category") || "All"
+  );
+  const [sortBy, setSortBy] = useState<SortOption>(() => {
+    const value = searchParams.get("sort");
+    return (SORT_VALUES as string[]).includes(value ?? "") ? (value as SortOption) : "newest";
+  });
+  const [priceMode, setPriceMode] = useState<PriceMode>(() => {
+    if (searchParams.has("priceUnder")) return "under";
+    if (searchParams.has("priceMin") || searchParams.has("priceMax")) return "range";
+    return "all";
+  });
+  const [underMax, setUnderMax] = useState<number>(() => {
+    const value = parseInt(searchParams.get("priceUnder") ?? "", 10);
+    return Number.isFinite(value) && value > 0 ? value : 100_000;
+  });
+  const [rangeMin, setRangeMin] = useState(() => searchParams.get("priceMin") ?? "");
+  const [rangeMax, setRangeMax] = useState(() => searchParams.get("priceMax") ?? "");
+
+  // Skip syncing the URL on the very first render — it already reflects this state
+  const isFirstRender = useRef(true);
 
   // UI toggles
   const [showPricePanel, setShowPricePanel] = useState(false);
@@ -82,6 +112,28 @@ export default function ProductsPage() {
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
+
+  // Keep the URL in sync with the active filters so returning from a product
+  // detail page (via back navigation) restores this exact filter state.
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (activeCategory !== "All") params.set("category", activeCategory);
+    if (sortBy !== "newest") params.set("sort", sortBy);
+    if (priceMode === "under") {
+      params.set("priceUnder", String(underMax));
+    } else if (priceMode === "range") {
+      if (rangeMin) params.set("priceMin", rangeMin);
+      if (rangeMax) params.set("priceMax", rangeMax);
+    }
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [activeCategory, sortBy, priceMode, underMax, rangeMin, rangeMax, pathname, router]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -355,11 +407,11 @@ export default function ProductsPage() {
 
           {/* Loading skeleton */}
           {loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-border/50 bg-white/60 overflow-hidden animate-pulse"
+                  className="border border-border/50 bg-white/60 overflow-hidden animate-pulse"
                 >
                   <div className="aspect-[4/5] bg-border/40" />
                   <div className="p-5 space-y-3">
@@ -399,7 +451,7 @@ export default function ProductsPage() {
 
           {/* Product grid */}
           {!loading && !error && filteredProducts.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -440,33 +492,33 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={href}
-      className="group block rounded-2xl border border-border/60 bg-white overflow-hidden transition-all duration-300 hover:border-accent/35 hover:bg-accent/[0.03]"
+      className="group block border border-border/60 bg-white overflow-hidden transition-all duration-300 hover:border-accent/35 hover:bg-accent/[0.03]"
     >
       <div className="relative aspect-[4/5] bg-[#f0efea] overflow-hidden">
         <Image
           src={imageSrc}
           alt={product.name}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes="(max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
           unoptimized={imageSrc.startsWith("http")}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent opacity-80 group-hover:from-foreground/15 transition-opacity duration-300" />
       </div>
-      <div className="p-5 space-y-2">
+      <div className="p-3 sm:p-5 space-y-1.5 sm:space-y-2">
         {product.category ? (
-          <p className="text-[11px] font-medium tracking-[0.14em] uppercase text-accent">
+          <p className="text-[10px] sm:text-[11px] font-medium tracking-[0.14em] uppercase text-accent">
             {product.category}
           </p>
         ) : null}
-        <h2 className="text-foreground text-base font-semibold tracking-tight leading-snug group-hover:text-accent transition-colors duration-200">
+        <h2 className="text-foreground text-sm sm:text-base font-semibold tracking-tight leading-snug group-hover:text-accent transition-colors duration-200">
           {product.name}
         </h2>
-        <p className="text-muted text-sm leading-relaxed line-clamp-2">
+        <p className="text-muted text-xs sm:text-sm leading-relaxed whitespace-pre-line line-clamp-2">
           {product.description}
         </p>
         {typeof product.price === "number" && !Number.isNaN(product.price) ? (
-          <p className="text-foreground/80 text-sm font-medium pt-1">
+          <p className="text-foreground/80 text-xs sm:text-sm font-medium pt-1">
             {formatPrice(product.price)}
           </p>
         ) : null}

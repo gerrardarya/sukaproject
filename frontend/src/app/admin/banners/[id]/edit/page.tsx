@@ -7,16 +7,137 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { updateBanner } from "../../../actions";
 import AdminSidebar from "../../../components/AdminSidebar";
-import { ArrowLeft, Save, ImageIcon, Upload, X } from "lucide-react";
+import { ArrowLeft, Save, ImageIcon, Upload, X, ExternalLink } from "lucide-react";
 
 type Banner = {
   id: number;
   title: string;
   description: string | null;
+  button_text: string | null;
   image_url: string;
   is_active: boolean;
   sort_order: number;
 };
+
+function BannerPreview({
+  title,
+  description,
+  buttonText,
+  imagePreview,
+  isLocalFile,
+  isActive,
+  sortOrder,
+}: {
+  title: string;
+  description: string;
+  buttonText: string;
+  imagePreview: string;
+  isLocalFile: boolean;
+  isActive: boolean;
+  sortOrder: number;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-muted">
+          Hero Preview
+        </p>
+        <Link
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-[10px] text-accent hover:text-accent/70 transition-colors duration-200"
+        >
+          View live
+          <ExternalLink className="w-2.5 h-2.5" />
+        </Link>
+      </div>
+
+      {/* Banner mock */}
+      <div className="relative w-full aspect-[16/7] rounded-xl overflow-hidden bg-foreground/10 border border-border/30">
+        {imagePreview ? (
+          <Image
+            src={imagePreview}
+            alt="Banner preview"
+            fill
+            className="object-cover transition-opacity duration-300"
+            unoptimized={isLocalFile || imagePreview.startsWith("blob:")}
+            sizes="672px"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full gap-2 bg-[#f0efea]">
+            <ImageIcon className="w-8 h-8 text-border/60" />
+            <p className="text-xs text-muted/40">No image yet</p>
+          </div>
+        )}
+
+        {/* Gradient overlay — mirrors HeroSection exactly */}
+        {imagePreview && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
+        )}
+
+        {/* Text overlay — bottom-left like HeroSection */}
+        <div className="absolute inset-0 flex flex-col justify-end px-5 pb-5 z-10 pointer-events-none">
+          {title.trim() ? (
+            <h2 className="text-white text-lg font-semibold tracking-tight leading-tight mb-1.5 max-w-xs">
+              {title}
+            </h2>
+          ) : (
+            <h2 className="text-white/30 text-base font-medium tracking-tight mb-1.5 italic">
+              Banner title…
+            </h2>
+          )}
+
+          {description.trim() ? (
+            <p className="text-white/85 text-xs leading-relaxed max-w-xs mb-3">
+              {description.trim()}
+            </p>
+          ) : null}
+
+          {/* CTA — same style as HeroSection */}
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white text-black text-[11px] font-medium w-fit opacity-70">
+            {buttonText.trim() || "Button text…"}
+          </div>
+        </div>
+
+        {/* Status badges — top-left */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 z-20">
+          <span className="px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px] font-medium backdrop-blur-sm">
+            Slide #{sortOrder}
+          </span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-medium backdrop-blur-sm ${
+              isActive
+                ? "bg-green-500/80 text-white"
+                : "bg-black/50 text-white/50"
+            }`}
+          >
+            {isActive ? "Active" : "Inactive"}
+          </span>
+        </div>
+
+        {/* Dot indicator row — bottom-right, like HeroSection */}
+        <div className="absolute bottom-3 right-4 flex gap-1.5 z-20">
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className={`rounded-full transition-all duration-300 ${
+                i === 0 ? "w-4 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/40"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Progress bar — bottom, like HeroSection */}
+        <div className="absolute bottom-0 left-0 h-[2px] w-2/5 bg-white/60 z-20" />
+      </div>
+
+      <p className="text-[10px] text-muted/50 leading-relaxed">
+        Preview updates as you edit. Gradient, CTA, and indicators match the live homepage hero.
+      </p>
+    </div>
+  );
+}
 
 export default function EditBannerPage() {
   const router = useRouter();
@@ -33,6 +154,7 @@ export default function EditBannerPage() {
   const [form, setForm] = useState({
     title: "",
     description: "",
+    button_text: "Create Yours Now!",
     image_url: "",
     is_active: true,
     sort_order: 1,
@@ -50,6 +172,7 @@ export default function EditBannerPage() {
         setForm({
           title: b.title || "",
           description: b.description ?? "",
+          button_text: b.button_text ?? "Create Yours Now!",
           image_url: b.image_url,
           is_active: b.is_active,
           sort_order: b.sort_order,
@@ -58,7 +181,6 @@ export default function EditBannerPage() {
       }
 
       if (allBanners) {
-        // Exclude current banner's own order from taken list
         setTakenOrders(
           allBanners
             .filter((b) => String(b.id) !== String(id))
@@ -137,6 +259,7 @@ export default function EditBannerPage() {
       await updateBanner(id, {
         title: form.title,
         description: form.description.trim(),
+        button_text: form.button_text.trim() || "Create Yours Now!",
         image_url,
         is_active: form.is_active,
         sort_order: Number(form.sort_order),
@@ -176,6 +299,19 @@ export default function EditBannerPage() {
             </div>
           </div>
 
+          {/* Live Preview — above the form */}
+          <div className="mb-6">
+            <BannerPreview
+              title={form.title}
+              description={form.description}
+              buttonText={form.button_text}
+              imagePreview={imagePreview}
+              isLocalFile={imageFile !== null}
+              isActive={form.is_active}
+              sortOrder={Number(form.sort_order)}
+            />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Image Upload */}
             <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
@@ -188,7 +324,7 @@ export default function EditBannerPage() {
                     alt="Preview"
                     fill
                     className="object-cover"
-                    unoptimized={imageFile !== null}
+                    unoptimized={imageFile !== null || imagePreview.startsWith("blob:")}
                   />
                   <button
                     type="button"
@@ -284,6 +420,23 @@ export default function EditBannerPage() {
                   className="w-full px-4 py-3 rounded-xl border border-border/60 bg-[#f8f7f4] text-foreground placeholder:text-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all duration-200 resize-y min-h-[88px]"
                 />
                 <p className="text-xs text-muted">Optional — appears below the title on the storefront hero</p>
+              </div>
+
+              {/* Button Text */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="button_text">
+                  Button Text
+                </label>
+                <input
+                  id="button_text"
+                  name="button_text"
+                  type="text"
+                  value={form.button_text}
+                  onChange={handleChange}
+                  placeholder="Create Yours Now!"
+                  className="w-full px-4 py-3 rounded-xl border border-border/60 bg-[#f8f7f4] text-foreground placeholder:text-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all duration-200"
+                />
+                <p className="text-xs text-muted">CTA button label shown on the hero slide</p>
               </div>
 
               {/* Sort Order */}

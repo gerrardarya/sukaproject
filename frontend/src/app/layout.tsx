@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { Gloock, Hanken_Grotesk } from "next/font/google";
+import { Poppins, Forum } from "next/font/google";
 import "./globals.css";
 import RootLayoutClient from "@/components/RootLayoutClient";
 
-const gloock = Gloock({
-  variable: "--font-gloock",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-const hankenGrotesk = Hanken_Grotesk({
-  variable: "--font-hanken",
+const forum = Forum({
+  variable: "--font-forum",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: "400",
   display: "swap",
 });
 
@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className={`${gloock.variable} ${hankenGrotesk.variable} antialiased`}>
+      <body className={`${poppins.variable} ${forum.variable} antialiased`}>
         <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>

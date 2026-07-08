@@ -73,7 +73,7 @@ export default function HowToOrderPage() {
               How to Order
             </h1>
             <p className="mt-4 text-lg text-muted sm:text-xl">
-              Simple process to get your project started with SukaProject
+              Simple process to get your project started with Custom at Suka
             </p>
             <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
               Whether you need a custom hamper, corporate gifting, or a digital
