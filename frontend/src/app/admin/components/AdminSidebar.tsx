@@ -4,13 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Package, Image as ImageIcon, PanelTop, Building2, Info, LogOut } from "lucide-react";
+import { Package, Image as ImageIcon, PanelTop, Building2, Info, Tags, MessageSquareQuote, MessageCircle, LogOut } from "lucide-react";
 
 const navItems = [
   { label: "Products", href: "/admin", icon: Package },
+  { label: "Categories", href: "/admin/categories", icon: Tags },
   { label: "Banners", href: "/admin/banners", icon: ImageIcon },
   { label: "Popup", href: "/admin/popup", icon: PanelTop },
   { label: "Clients", href: "/admin/clients", icon: Building2 },
+  { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
+  { label: "WhatsApp Popup", href: "/admin/whatsapp", icon: MessageCircle },
   { label: "About Page", href: "/admin/about", icon: Info },
 ];
 

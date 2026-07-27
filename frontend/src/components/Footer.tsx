@@ -18,6 +18,7 @@ const sections = [
     links: [
       { label: "Our Story", href: "/about" },
       { label: "Clients", href: "/#clients" },
+      { label: "Testimonials", href: "/testimonials" },
       { label: "Vision & Mission", href: "/about#vision" },
     ],
   },

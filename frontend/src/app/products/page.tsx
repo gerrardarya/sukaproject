@@ -208,7 +208,7 @@ function ProductsPageContent() {
       <Header />
 
       <main className="pt-28 pb-20 px-6 lg:px-10">
-        <div className="max-w-6xl mx-auto">
+        <div className="w-full">
 
           {/* Page header */}
           <header className="mb-12 lg:mb-14 max-w-2xl">
@@ -407,7 +407,7 @@ function ProductsPageContent() {
 
           {/* Loading skeleton */}
           {loading && (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
@@ -451,7 +451,7 @@ function ProductsPageContent() {
 
           {/* Product grid */}
           {!loading && !error && filteredProducts.length > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import MobileNav from "./MobileNav";
 
@@ -27,14 +28,14 @@ const NAV: NavItem[] = [
     children: [
       { label: "Ordering guide", href: "/how-to-order" },
       { label: "Process", href: "/#process" },
-      { label: "FAQ", href: "/#faq" },
+      { label: "FAQ", href: "/how-to-order#faq" },
     ],
   },
   {
     label: "About Us",
     children: [
       { label: "Our Story", href: "/about" },
-      { label: "Clients", href: "/#clients" },
+      { label: "Testimonials", href: "/testimonials" },
     ],
   },
   { label: "Contact Us", href: "/#contact" },
@@ -50,6 +51,14 @@ export default function Header({ transparentOnTop = false }: { transparentOnTop?
   const [hovered, setHovered] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pathname = usePathname();
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -83,10 +92,10 @@ export default function Header({ transparentOnTop = false }: { transparentOnTop?
         setOpenMenu(null);
       }}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+      <div className="w-full px-6 lg:px-8 py-4">
         {/* Desktop Navigation */}
         <div className="hidden lg:flex justify-between items-center">
-          <Link href="/" className="relative h-10 w-auto flex items-center flex-shrink-0">
+          <Link href="/" onClick={handleLogoClick} className="relative h-10 w-auto flex items-center flex-shrink-0">
             <Image
               src="/logo/logo-red.png"
               alt="Custom at Suka"
@@ -159,7 +168,7 @@ export default function Header({ transparentOnTop = false }: { transparentOnTop?
 
         {/* Mobile: logo + burger menu */}
         <div className="relative flex lg:hidden items-center justify-between gap-3">
-          <Link href="/" className="relative z-[60] flex h-10 shrink-0 items-center">
+          <Link href="/" onClick={handleLogoClick} className="relative z-[60] flex h-10 shrink-0 items-center">
             <Image
               src="/logo/logo-red.png"
               alt="Custom at Suka"

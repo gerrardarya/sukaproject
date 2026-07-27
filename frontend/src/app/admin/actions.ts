@@ -70,6 +70,31 @@ export async function updateProduct(
   if (error) throw new Error(error.message);
 }
 
+// ─── Category Actions ─────────────────────────────────────────────
+
+export async function createCategory(name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error("Category name is required");
+
+  const { data, error } = await supabaseAdmin
+    .from("categories")
+    .insert({ name: trimmed })
+    .select("id, name")
+    .single();
+
+  if (error) {
+    if (error.code === "23505") throw new Error("This category already exists");
+    throw new Error(error.message);
+  }
+
+  return data as { id: number; name: string };
+}
+
+export async function deleteCategory(id: number) {
+  const { error } = await supabaseAdmin.from("categories").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 // ─── Banner Actions ───────────────────────────────────────────────
 
 export async function deleteBanner(id: number) {
@@ -229,6 +254,76 @@ export async function toggleClientActive(id: number, is_active: boolean) {
   if (error) throw new Error(error.message);
 }
 
+// ─── Testimonial Actions ────────────────────────────────────────────
+
+export async function createTestimonial(data: {
+  client_name: string;
+  company: string;
+  result_image_url: string;
+  quote: string;
+  result_text: string;
+  is_active: boolean;
+  sort_order: number;
+}) {
+  const { error } = await supabaseAdmin.from("testimonials").insert([data]);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateTestimonial(
+  id: string | string[] | undefined,
+  data: {
+    client_name: string;
+    company: string;
+    result_image_url: string;
+    quote: string;
+    result_text: string;
+    is_active: boolean;
+    sort_order: number;
+  }
+) {
+  const { data: existing } = await supabaseAdmin
+    .from("testimonials")
+    .select("result_image_url")
+    .eq("id", id)
+    .single();
+
+  const { error } = await supabaseAdmin
+    .from("testimonials")
+    .update(data)
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+
+  const oldUrl = existing?.result_image_url as string | undefined;
+  if (oldUrl && oldUrl !== data.result_image_url) {
+    const fileName = bucketFileName(oldUrl);
+    if (fileName) await supabaseAdmin.storage.from("images").remove([fileName]);
+  }
+}
+
+export async function deleteTestimonial(id: number) {
+  const { data: testimonial } = await supabaseAdmin
+    .from("testimonials")
+    .select("result_image_url")
+    .eq("id", id)
+    .single();
+
+  const { error } = await supabaseAdmin.from("testimonials").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  if (testimonial?.result_image_url) {
+    const fileName = bucketFileName(testimonial.result_image_url);
+    if (fileName) await supabaseAdmin.storage.from("images").remove([fileName]);
+  }
+}
+
+export async function toggleTestimonialActive(id: number, is_active: boolean) {
+  const { error } = await supabaseAdmin
+    .from("testimonials")
+    .update({ is_active })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 // ─── About page (`about_settings` single row + `team_members`, max 3) ──
 
 const MAX_TEAM_MEMBERS = 3;
@@ -340,6 +435,38 @@ export async function deleteTeamMember(id: number) {
   if (member?.image_url) {
     const fileName = bucketFileName(member.image_url);
     if (fileName) await supabaseAdmin.storage.from("images").remove([fileName]);
+  }
+}
+
+// ─── WhatsApp popup settings (table `whatsapp_settings`, single row) ───
+
+export async function upsertWhatsAppSettings(data: {
+  greeting_message: string;
+  prefilled_message: string;
+}) {
+  const { data: existing } = await supabaseAdmin
+    .from("whatsapp_settings")
+    .select("id")
+    .order("id", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const payload = {
+    greeting_message: data.greeting_message.trim(),
+    prefilled_message: data.prefilled_message.trim(),
+  };
+
+  if (existing?.id != null) {
+    const { error } = await supabaseAdmin
+      .from("whatsapp_settings")
+      .update(payload)
+      .eq("id", existing.id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabaseAdmin
+      .from("whatsapp_settings")
+      .insert(payload);
+    if (error) throw new Error(error.message);
   }
 }
 

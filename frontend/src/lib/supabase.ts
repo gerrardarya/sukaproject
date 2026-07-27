@@ -21,3 +21,21 @@ export type Product = {
   is_active: boolean;
   created_at?: string;
 };
+
+export type Category = {
+  id: number;
+  name: string;
+  created_at?: string;
+};
+
+export type Testimonial = {
+  id: number;
+  client_name: string;
+  company: string | null;
+  result_image_url: string | null;
+  quote: string;
+  result_text: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+};

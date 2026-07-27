@@ -1,16 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const WHATSAPP_NUMBER = "1234567890";
-const WHATSAPP_MESSAGE = encodeURIComponent("Hi! I'd like to know more about your products.");
+
+const DEFAULT_GREETING_MESSAGE =
+  "Hi there! 👋 How can we help you today? Let us know what you need and we'll craft something special just for you.";
+const DEFAULT_PREFILLED_MESSAGE = "Hi! I'd like to know more about your products.";
 
 export default function FloatingWhatsApp() {
   const [open, setOpen] = useState(false);
+  const [greetingMessage, setGreetingMessage] = useState(DEFAULT_GREETING_MESSAGE);
+  const [prefilledMessage, setPrefilledMessage] = useState(DEFAULT_PREFILLED_MESSAGE);
 
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
+  useEffect(() => {
+    supabase
+      .from("whatsapp_settings")
+      .select("greeting_message, prefilled_message")
+      .order("id", { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.greeting_message) setGreetingMessage(data.greeting_message);
+        if (data?.prefilled_message) setPrefilledMessage(data.prefilled_message);
+      });
+  }, []);
+
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(prefilledMessage)}`;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
@@ -41,8 +60,8 @@ export default function FloatingWhatsApp() {
 
             {/* Bubble message */}
             <div className="bg-[#f0fdf4] rounded-xl rounded-tl-sm px-3.5 py-2.5 mb-4">
-              <p className="text-foreground text-xs leading-relaxed">
-                Hi there! 👋 How can we help you today? Let us know what you need and we'll craft something special just for you.
+              <p className="text-foreground text-xs leading-relaxed whitespace-pre-line">
+                {greetingMessage}
               </p>
             </div>
 

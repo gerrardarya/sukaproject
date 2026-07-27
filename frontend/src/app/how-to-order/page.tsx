@@ -63,13 +63,16 @@ export default function HowToOrderPage() {
       <Header />
 
       <main>
-        {/* Hero */}
-        <header className="border-b border-border/40 bg-white/60 backdrop-blur-sm">
-          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-20 lg:py-24 lg:px-8">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent">
-              Guide
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+        {/* How to order (intro + process combined) */}
+        <section
+          className="border-b border-border/40 bg-white/60 backdrop-blur-sm"
+          aria-labelledby="how-to-order-heading"
+        >
+          <div className="mx-auto max-w-3xl px-6 pt-16 text-center sm:pt-20 lg:pt-24 lg:px-8">
+            <h1
+              id="how-to-order-heading"
+              className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+            >
               How to Order
             </h1>
             <p className="mt-4 text-lg text-muted sm:text-xl">
@@ -77,10 +80,25 @@ export default function HowToOrderPage() {
             </p>
             <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
               Whether you need a custom hamper, corporate gifting, or a digital
-              experience, we keep ordering straightforward — clear steps, honest
-              timelines, and a team that listens.
+              experience, we keep ordering straightforward — three steps from
+              first message to a plan you can act on.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          </div>
+
+          <div className="mx-auto max-w-5xl px-6 pb-16 sm:pb-20 lg:px-8 lg:pb-24">
+            <div className="mt-12 grid gap-6 md:grid-cols-3 md:gap-5 lg:mt-14 lg:gap-6">
+              {STEPS.map((item) => (
+                <StepCard
+                  key={item.step}
+                  step={item.step}
+                  title={item.title}
+                  description={item.description}
+                  icon={item.icon}
+                />
+              ))}
+            </div>
+
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/#contact"
                 className="inline-flex items-center justify-center rounded-full bg-accent px-6 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-accent/90 hover:shadow-md"
@@ -95,49 +113,12 @@ export default function HowToOrderPage() {
               </Link>
             </div>
           </div>
-        </header>
-
-        {/* Process */}
-        <section
-          className="mx-auto max-w-5xl px-6 py-16 sm:py-20 lg:px-8 lg:py-24"
-          aria-labelledby="process-heading"
-        >
-          <div className="mx-auto max-w-2xl text-center">
-            <h2
-              id="process-heading"
-              className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
-            >
-              How it works
-            </h2>
-            <p className="mt-3 text-sm text-muted sm:text-base">
-              Three steps from first message to a plan you can act on.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-6 md:grid-cols-3 md:gap-5 lg:mt-14 lg:gap-6">
-            {STEPS.map((item) => (
-              <StepCard
-                key={item.step}
-                step={item.step}
-                title={item.title}
-                description={item.description}
-                icon={item.icon}
-              />
-            ))}
-          </div>
-
-          {/* Horizontal connector on md+ (optional visual) */}
-          <div
-            className="mx-auto mt-10 hidden max-w-4xl md:block"
-            aria-hidden
-          >
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent" />
-          </div>
         </section>
 
         {/* FAQ */}
         <section
-          className="border-t border-border/40 bg-white/50 py-16 sm:py-20 lg:py-24"
+          id="faq"
+          className="scroll-mt-24 border-t border-border/40 bg-white/50 py-16 sm:py-20 lg:py-24"
           aria-labelledby="faq-heading"
         >
           <div className="mx-auto max-w-3xl px-6 lg:px-8">

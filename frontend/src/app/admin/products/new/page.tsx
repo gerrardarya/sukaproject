@@ -6,15 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { createProduct } from "../../actions";
+import CategorySelect from "../../components/CategorySelect";
 import { ArrowLeft, Save, ImageIcon, Upload, X } from "lucide-react";
-
-const CATEGORIES = [
-  "Signature Hamper Collection",
-  "Artisan Gift Curation",
-  "Premium Baby Essential",
-  "Corporate Gift",
-  "Custom Order",
-];
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -30,7 +23,7 @@ export default function NewProductPage() {
     description: "",
     price: "",
     image_url: "",
-    category: CATEGORIES[0],
+    category: "",
     is_active: true,
   });
 
@@ -249,18 +242,10 @@ export default function NewProductPage() {
                 <label className="text-sm font-medium text-foreground" htmlFor="category">
                   Category <span className="text-red-400">*</span>
                 </label>
-                <select
-                  id="category"
-                  name="category"
+                <CategorySelect
                   value={form.category}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-border/60 bg-[#f8f7f4] text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all duration-200"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                  onChange={(category) => setForm((prev) => ({ ...prev, category }))}
+                />
               </div>
             </div>
 
