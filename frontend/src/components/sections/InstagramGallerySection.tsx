@@ -1,8 +1,64 @@
-import React from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Instagram } from "lucide-react";
 
+const FEED_URL = "https://feeds.behold.so/pszP1QzYlKiVMXbMm1Pr";
+const PROFILE_URL = "https://www.instagram.com/custom.at.suka/";
+const TILE_COUNT = 6;
+
+// Shown while the real feed loads, and as a fallback if it can't be reached
+const FALLBACK_TILES = [
+  { src: "/product/product-1.jpeg", alt: "Custom hamper creation" },
+  { src: "/product/product-2.jpeg", alt: "Artisan gift curation" },
+  { src: "/product/product-3.jpeg", alt: "Premium baby essentials" },
+  { src: "/product/product-4.jpeg", alt: "Corporate gift selection" },
+  { src: "/product/banner-1.jpeg", alt: "Gift presentation" },
+  { src: "/product/product-1.jpeg", alt: "Handcrafted details" },
+];
+
+type BeholdPost = {
+  id: string;
+  permalink: string;
+  caption?: string;
+  sizes?: { medium?: { mediaUrl: string } };
+};
+
+type Tile = { src: string; alt: string; href: string };
+
 export default function InstagramGallerySection() {
+  const [tiles, setTiles] = useState<Tile[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch(FEED_URL)
+      .then((res) => res.json())
+      .then((data: { posts?: BeholdPost[] }) => {
+        if (cancelled) return;
+        const posts = (data.posts ?? [])
+          .filter((p) => p.sizes?.medium?.mediaUrl)
+          .slice(0, TILE_COUNT)
+          .map((p) => ({
+            src: p.sizes!.medium!.mediaUrl,
+            alt: p.caption?.slice(0, 80) || "Instagram post",
+            href: p.permalink,
+          }));
+        if (posts.length > 0) setTiles(posts);
+      })
+      .catch(() => {
+        // Keep showing the fallback tiles
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const displayTiles: Tile[] =
+    tiles ?? FALLBACK_TILES.map((t) => ({ ...t, href: PROFILE_URL }));
+
   return (
     <section className="py-24 lg:py-32 px-6 lg:px-8 bg-cream/30">
       <div className="max-w-7xl mx-auto">
@@ -17,7 +73,7 @@ export default function InstagramGallerySection() {
             Get inspired by our latest creations and behind-the-scenes moments
           </p>
           <a
-            href="https://www.instagram.com/custom.at.suka/"
+            href={PROFILE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3 rounded-full font-medium hover:bg-foreground/85 transition-all duration-300"
@@ -29,17 +85,10 @@ export default function InstagramGallerySection() {
 
         {/* Instagram Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[
-            { src: "/product/product-1.jpeg", alt: "Custom hamper creation" },
-            { src: "/product/product-2.jpeg", alt: "Artisan gift curation" },
-            { src: "/product/product-3.jpeg", alt: "Premium baby essentials" },
-            { src: "/product/product-4.jpeg", alt: "Corporate gift selection" },
-            { src: "/product/banner-1.jpeg", alt: "Gift presentation" },
-            { src: "/product/product-1.jpeg", alt: "Handcrafted details" }
-          ].map((item, index) => (
+          {displayTiles.map((item, index) => (
             <a
-              key={index}
-              href="https://www.instagram.com/custom.at.suka/"
+              key={item.href + index}
+              href={item.href}
               target="_blank"
               rel="noopener noreferrer"
               className="group relative aspect-square overflow-hidden rounded-xl bg-cream"
@@ -48,6 +97,7 @@ export default function InstagramGallerySection() {
                 src={item.src}
                 alt={item.alt}
                 fill
+                unoptimized={item.src.startsWith("http")}
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
               />
               {/* Overlay on hover */}

@@ -368,10 +368,11 @@ function bucketFileName(url: string): string | null {
 export async function upsertAboutSettings(data: {
   mission_image_url: string;
   vision_image_url: string;
+  showroom_image_url: string;
 }) {
   const { data: existing } = await supabaseAdmin
     .from("about_settings")
-    .select("id, mission_image_url, vision_image_url")
+    .select("id, mission_image_url, vision_image_url, showroom_image_url")
     .order("id", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -379,6 +380,7 @@ export async function upsertAboutSettings(data: {
   const payload = {
     mission_image_url: data.mission_image_url.trim(),
     vision_image_url: data.vision_image_url.trim(),
+    showroom_image_url: data.showroom_image_url.trim(),
   };
 
   if (existing?.id != null) {
@@ -395,7 +397,7 @@ export async function upsertAboutSettings(data: {
   }
 
   // Remove replaced images from storage
-  for (const key of ["mission_image_url", "vision_image_url"] as const) {
+  for (const key of ["mission_image_url", "vision_image_url", "showroom_image_url"] as const) {
     const oldUrl = existing?.[key] as string | undefined;
     if (oldUrl && oldUrl !== payload[key]) {
       const fileName = bucketFileName(oldUrl);

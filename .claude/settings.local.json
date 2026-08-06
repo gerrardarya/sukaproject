@@ -7,7 +7,14 @@
       "Bash(cat \"E:/Work/sukaproject/frontend/.agents/skills/impeccable\"/*)",
       "Bash(node *)",
       "Bash(npx eslint *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "WebSearch",
+      "WebFetch(domain:behold.so)",
+      "WebFetch(domain:feeds.behold.so)",
+      "Bash(echo \"started with pid $!\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s -D - -o /dev/null \"https://feeds.behold.so/pszP1QzYlKiVMXbMm1Pr\" -H \"Origin: http://localhost:3000\")"
     ]
   }
 }

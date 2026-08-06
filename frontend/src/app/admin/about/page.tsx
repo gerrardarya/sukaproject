@@ -257,11 +257,13 @@ function TeamMemberCard({
 export default function AboutSettingsPage() {
   const [loading, setLoading] = useState(true);
 
-  // Mission / vision images
+  // Mission / vision / showroom images
   const [missionPreview, setMissionPreview] = useState("");
   const [visionPreview, setVisionPreview] = useState("");
+  const [showroomPreview, setShowroomPreview] = useState("");
   const [missionFile, setMissionFile] = useState<File | null>(null);
   const [visionFile, setVisionFile] = useState<File | null>(null);
+  const [showroomFile, setShowroomFile] = useState<File | null>(null);
   const [savingImages, setSavingImages] = useState(false);
   const [imagesError, setImagesError] = useState("");
   const [imagesSaved, setImagesSaved] = useState(false);
@@ -287,8 +289,10 @@ export default function AboutSettingsPage() {
 
     setMissionPreview(settings?.mission_image_url ?? "");
     setVisionPreview(settings?.vision_image_url ?? "");
+    setShowroomPreview(settings?.showroom_image_url ?? "");
     setMissionFile(null);
     setVisionFile(null);
+    setShowroomFile(null);
     setMembers(team ?? []);
     setDraftCount(0);
     setLoading(false);
@@ -305,14 +309,18 @@ export default function AboutSettingsPage() {
     try {
       let mission_image_url = missionFile ? "" : missionPreview;
       let vision_image_url = visionFile ? "" : visionPreview;
+      let showroom_image_url = showroomFile ? "" : showroomPreview;
       if (missionFile) mission_image_url = await uploadImage(missionFile);
       if (visionFile) vision_image_url = await uploadImage(visionFile);
+      if (showroomFile) showroom_image_url = await uploadImage(showroomFile);
 
-      await upsertAboutSettings({ mission_image_url, vision_image_url });
+      await upsertAboutSettings({ mission_image_url, vision_image_url, showroom_image_url });
       setMissionFile(null);
       setVisionFile(null);
+      setShowroomFile(null);
       setMissionPreview(mission_image_url);
       setVisionPreview(vision_image_url);
+      setShowroomPreview(showroom_image_url);
       setImagesSaved(true);
     } catch (err) {
       setImagesError(
@@ -353,11 +361,11 @@ export default function AboutSettingsPage() {
           <div className="flex items-center gap-2 mb-6">
             <ImageIcon className="w-4 h-4 text-accent" />
             <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-              Mission &amp; Vision Images
+              Site Images
             </h2>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-6 max-w-xl">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl">
             <ImagePicker
               label="Our Mission image"
               preview={missionPreview}
@@ -383,6 +391,20 @@ export default function AboutSettingsPage() {
               onRemove={() => {
                 setVisionFile(null);
                 setVisionPreview("");
+                setImagesSaved(false);
+              }}
+            />
+            <ImagePicker
+              label="Showroom image (homepage &ldquo;Find Us Online&rdquo; section)"
+              preview={showroomPreview}
+              onFile={(f) => {
+                setShowroomFile(f);
+                setShowroomPreview(URL.createObjectURL(f));
+                setImagesSaved(false);
+              }}
+              onRemove={() => {
+                setShowroomFile(null);
+                setShowroomPreview("");
                 setImagesSaved(false);
               }}
             />

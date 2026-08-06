@@ -9,6 +9,7 @@ import ProcessSection from "@/components/sections/ProcessSection";
 import ServicesSection from "@/components/sections/ServicesSection";
 import CoreValuesSection from "@/components/sections/CoreValuesSection";
 import WhatsAppCTASection from "@/components/sections/WhatsAppCTASection";
+import FindUsSection from "@/components/sections/FindUsSection";
 import InstagramGallerySection from "@/components/sections/InstagramGallerySection";
 import LocomotiveScroll from "locomotive-scroll";
 import { useEffect, useState } from "react";
@@ -38,6 +39,7 @@ export default function Home() {
       <ProcessSection />
       <WhatsAppCTASection />
       <InstagramGallerySection />
+      <FindUsSection />
 
       <Footer />
     </div>
