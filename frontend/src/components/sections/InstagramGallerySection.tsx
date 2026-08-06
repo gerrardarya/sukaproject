@@ -61,37 +61,28 @@ export default function InstagramGallerySection() {
 
   return (
     <section className="py-24 lg:py-32 px-6 lg:px-8 bg-cream/30">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <div className="inline-block mb-4">
-            <span className="text-accent text-sm font-medium tracking-wider uppercase">Follow Our Journey</span>
-          </div>
-          <h2 className="font-serif text-4xl md:text-5xl text-foreground mb-5 font-normal tracking-tight">
-            @custom.at.suka
-          </h2>
-          <p className="text-muted text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-            Get inspired by our latest creations and behind-the-scenes moments
-          </p>
+      <div className="max-w-[92rem] mx-auto">
+        <div className="text-center mb-10">
           <a
             href={PROFILE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3 rounded-full font-medium hover:bg-foreground/85 transition-all duration-300"
+            className="inline-flex items-center gap-2 text-foreground text-lg font-medium hover:text-accent transition-colors duration-200"
           >
             <Instagram className="w-5 h-5" />
-            Follow on Instagram
+            Follow us on Instagram @custom.at.suka
           </a>
         </div>
 
         {/* Instagram Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
           {displayTiles.map((item, index) => (
             <a
               key={item.href + index}
               href={item.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative aspect-square overflow-hidden rounded-xl bg-cream"
+              className="group relative aspect-square overflow-hidden bg-cream"
             >
               <Image
                 src={item.src}
