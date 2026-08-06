@@ -4,11 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Package, Image as ImageIcon, PanelTop, Building2, Info, Tags, MessageSquareQuote, MessageCircle, LogOut } from "lucide-react";
+import { Package, Image as ImageIcon, PanelTop, Building2, Info, Tags, MessageSquareQuote, MessageCircle, Newspaper, LogOut } from "lucide-react";
 
 const navItems = [
   { label: "Products", href: "/admin", icon: Package },
   { label: "Categories", href: "/admin/categories", icon: Tags },
+  { label: "Blog", href: "/admin/blog", icon: Newspaper },
   { label: "Banners", href: "/admin/banners", icon: ImageIcon },
   { label: "Popup", href: "/admin/popup", icon: PanelTop },
   { label: "Clients", href: "/admin/clients", icon: Building2 },

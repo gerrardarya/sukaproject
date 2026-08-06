@@ -23,6 +23,7 @@ const sections = [
       { label: "Clients", href: "/#clients" },
       { label: "Testimonials", href: "/testimonials" },
       { label: "Vision & Mission", href: "/about#vision" },
+      { label: "Blog", href: "/blog" },
     ],
   },
 ];

@@ -2,6 +2,7 @@
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { slugifyBlogTitle } from "@/lib/slugify";
 
 // Server-only client — service role bypasses RLS entirely
 const supabaseAdmin = createSupabaseClient(
@@ -546,4 +547,134 @@ export async function upsertPopup(data: {
       await supabaseAdmin.storage.from("images").remove([fileName]);
     }
   }
+}
+
+// ─── Blog posts (table `blog_posts`) ───────────────────────────────────
+
+async function uniqueBlogSlug(base: string, excludeId?: number): Promise<string> {
+  const root = base || "post";
+  let candidate = root;
+  let suffix = 2;
+
+  for (;;) {
+    let query = supabaseAdmin.from("blog_posts").select("id").eq("slug", candidate);
+    if (excludeId != null) query = query.neq("id", excludeId);
+    const { data } = await query.maybeSingle();
+    if (!data) return candidate;
+    candidate = `${root}-${suffix}`;
+    suffix += 1;
+  }
+}
+
+export async function createBlogPost(data: {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content_html: string;
+  cover_image_url: string;
+  is_active: boolean;
+}) {
+  const slug = await uniqueBlogSlug(slugifyBlogTitle(data.slug || data.title));
+
+  const payload = {
+    title: data.title.trim(),
+    slug,
+    excerpt: data.excerpt.trim(),
+    content_html: data.content_html,
+    cover_image_url: data.cover_image_url,
+    is_active: data.is_active,
+    published_at: data.is_active ? new Date().toISOString() : null,
+  };
+
+  const { error } = await supabaseAdmin.from("blog_posts").insert(payload);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/blog");
+}
+
+export async function updateBlogPost(
+  id: number,
+  data: {
+    title: string;
+    slug: string;
+    excerpt: string;
+    content_html: string;
+    cover_image_url: string;
+    is_active: boolean;
+  }
+) {
+  const { data: existing } = await supabaseAdmin
+    .from("blog_posts")
+    .select("slug, cover_image_url, is_active, published_at")
+    .eq("id", id)
+    .single();
+
+  const slug = await uniqueBlogSlug(slugifyBlogTitle(data.slug || data.title), id);
+
+  const published_at =
+    data.is_active && !existing?.published_at
+      ? new Date().toISOString()
+      : existing?.published_at ?? null;
+
+  const payload = {
+    title: data.title.trim(),
+    slug,
+    excerpt: data.excerpt.trim(),
+    content_html: data.content_html,
+    cover_image_url: data.cover_image_url,
+    is_active: data.is_active,
+    published_at,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabaseAdmin.from("blog_posts").update(payload).eq("id", id);
+  if (error) throw new Error(error.message);
+
+  const oldUrl = existing?.cover_image_url as string | undefined;
+  if (oldUrl && oldUrl !== payload.cover_image_url) {
+    const fileName = bucketFileName(oldUrl);
+    if (fileName) await supabaseAdmin.storage.from("images").remove([fileName]);
+  }
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${existing?.slug}`);
+  if (slug !== existing?.slug) revalidatePath(`/blog/${slug}`);
+
+  return { slug };
+}
+
+export async function toggleBlogPostActive(id: number, is_active: boolean) {
+  const { data: existing } = await supabaseAdmin
+    .from("blog_posts")
+    .select("slug, published_at")
+    .eq("id", id)
+    .single();
+
+  const published_at = is_active && !existing?.published_at ? new Date().toISOString() : existing?.published_at ?? null;
+
+  const { error } = await supabaseAdmin
+    .from("blog_posts")
+    .update({ is_active, published_at })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/blog");
+  if (existing?.slug) revalidatePath(`/blog/${existing.slug}`);
+}
+
+export async function deleteBlogPost(id: number) {
+  const { data: existing } = await supabaseAdmin
+    .from("blog_posts")
+    .select("slug, cover_image_url")
+    .eq("id", id)
+    .single();
+
+  const { error } = await supabaseAdmin.from("blog_posts").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  const fileName = existing?.cover_image_url ? bucketFileName(existing.cover_image_url) : null;
+  if (fileName) await supabaseAdmin.storage.from("images").remove([fileName]);
+
+  revalidatePath("/blog");
+  if (existing?.slug) revalidatePath(`/blog/${existing.slug}`);
 }

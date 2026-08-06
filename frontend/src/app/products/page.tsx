@@ -553,7 +553,6 @@ function ProductCard({ product }: { product: Product }) {
           fill
           sizes="(max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-          unoptimized={imageSrc.startsWith("http")}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent opacity-80 group-hover:from-foreground/15 transition-opacity duration-300" />
       </div>
