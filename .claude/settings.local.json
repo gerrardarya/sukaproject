@@ -4,7 +4,10 @@
       "Bash(xargs wc:*)",
       "Bash(npx tsc:*)",
       "Bash(python -m json.tool)",
-      "Bash(cat \"E:/Work/sukaproject/frontend/.agents/skills/impeccable\"/*)"
+      "Bash(cat \"E:/Work/sukaproject/frontend/.agents/skills/impeccable\"/*)",
+      "Bash(node *)",
+      "Bash(npx eslint *)",
+      "Bash(npx next *)"
     ]
   }
 }

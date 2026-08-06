@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import MobileNav from "./MobileNav";
+import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
 
 type DropdownItem = { label: string; href: string };
 type NavItem =
@@ -41,17 +42,18 @@ const NAV: NavItem[] = [
   { label: "Contact Us", href: "/#contact" },
 ];
 
-const socialItems = [
-  { label: "WhatsApp", link: "https://wa.me/1234567890" },
-  { label: "Instagram", link: "https://www.instagram.com/custom.at.suka/" },
-];
-
 export default function Header({ transparentOnTop = false }: { transparentOnTop?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
+  const whatsappNumber = useWhatsAppNumber();
+
+  const socialItems = [
+    { label: "WhatsApp", link: buildWhatsAppUrl(whatsappNumber) },
+    { label: "Instagram", link: "https://www.instagram.com/custom.at.suka/" },
+  ];
 
   const handleLogoClick = (e: React.MouseEvent) => {
     if (pathname === "/") {

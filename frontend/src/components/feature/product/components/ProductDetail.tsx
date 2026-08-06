@@ -7,6 +7,7 @@ import { Forum, Cormorant_Garamond } from "next/font/google";
 import { ArrowLeft, MessageCircle, ChevronRight, Package, Sparkles } from "lucide-react";
 import Header from "../../../Header";
 import Footer from "../../../Footer";
+import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
 
 const forum = Forum({ subsets: ["latin"], weight: "400" });
 const cormorantGaramond = Cormorant_Garamond({
@@ -46,13 +47,12 @@ export default function ProductDetail({
   product: ProductDetailData;
   relatedProducts?: RelatedProduct[];
 }) {
+  const whatsappNumber = useWhatsAppNumber();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const mainSrc = product.images[selectedImageIndex] ?? product.images[0];
   const showThumbs = product.images.length > 1;
 
-  const waMessage = encodeURIComponent(
-    `Halo, saya tertarik dengan produk "${product.name}". Bisa ceritakan lebih lanjut?`
-  );
+  const waMessage = `Halo, saya tertarik dengan produk "${product.name}". Bisa ceritakan lebih lanjut?`;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8f7f4]">
@@ -142,11 +142,14 @@ export default function ProductDetail({
                 !Number.isNaN(product.price) &&
                 product.price > 0 && (
                   <div className="mb-6">
-                    <p className="text-accent text-[1.6rem] font-semibold tracking-tight">
+                    <p className="text-muted text-xs font-medium tracking-[0.08em] uppercase">
+                      Starting price
+                    </p>
+                    <p className="text-accent text-[1.6rem] font-semibold tracking-tight mt-1">
                       {formatPrice(product.price)}
                     </p>
                     <p className="text-muted text-xs mt-1.5 leading-relaxed">
-                      Starting price · final price may vary based on customization
+                      Final price may vary based on customization
                     </p>
                   </div>
                 )}
@@ -181,7 +184,7 @@ export default function ProductDetail({
 
               {/* Primary CTA */}
               <a
-                href={`https://wa.me/6281234567890?text=${waMessage}`}
+                href={buildWhatsAppUrl(whatsappNumber, waMessage)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2.5 w-full bg-foreground text-[#f8f7f4] px-6 py-3.5 rounded-2xl text-sm font-medium hover:bg-foreground/85 active:scale-[0.98] transition-all duration-200 shadow-sm"

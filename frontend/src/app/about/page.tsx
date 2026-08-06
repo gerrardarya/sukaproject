@@ -8,6 +8,7 @@ import { MessageCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
+import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
 
 const easeLuxury = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -46,6 +47,7 @@ type TeamMember = {
 };
 
 export default function AboutPage() {
+  const whatsappNumber = useWhatsAppNumber();
   const [missionImage, setMissionImage] = useState(DEFAULT_MISSION_IMAGE);
   const [visionImage, setVisionImage] = useState(DEFAULT_VISION_IMAGE);
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -322,7 +324,7 @@ export default function AboutPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
-              href="https://wa.me/1234567890"
+              href={buildWhatsAppUrl(whatsappNumber)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2.5 bg-foreground text-[#f8f7f4] px-6 py-3 text-sm font-medium hover:bg-foreground/85 transition-colors duration-200"

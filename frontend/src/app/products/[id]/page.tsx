@@ -35,8 +35,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (error || !row) notFound();
 
-  const imageUrl = typeof row.image_url === "string" ? row.image_url.trim() : "";
-  const images = imageUrl ? [imageUrl] : ["/logo/logo-red.png"];
+  const galleryUrls = Array.isArray(row.image_urls)
+    ? (row.image_urls as unknown[]).filter(
+        (url): url is string => typeof url === "string" && url.trim() !== ""
+      )
+    : [];
+  const legacyUrl = typeof row.image_url === "string" ? row.image_url.trim() : "";
+  const images = galleryUrls.length > 0 ? galleryUrls : legacyUrl ? [legacyUrl] : ["/logo/logo-red.png"];
 
   const product = {
     id: row.id as number,

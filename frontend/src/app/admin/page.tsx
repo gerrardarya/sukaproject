@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase, Product } from "@/lib/supabase";
 import { deleteProduct, toggleProductActive } from "./actions";
 import AdminSidebar from "./components/AdminSidebar";
 import { Plus, ToggleLeft, ToggleRight, Trash2, Pencil, Package } from "lucide-react";
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -109,18 +111,19 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
-                {filtered.map((product) => (
-                  <tr key={product.id} className="hover:bg-[#f8f7f4]/50 transition-colors">
+                {filtered.map((product) => {
+                  const cover = product.image_urls?.[0]?.trim() || product.image_url?.trim();
+                  return (
+                  <tr
+                    key={product.id}
+                    onClick={() => router.push(`/admin/products/${product.id}/edit`)}
+                    className="hover:bg-[#f8f7f4]/50 transition-colors cursor-pointer"
+                  >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        {product.image_url ? (
+                        {cover ? (
                           <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-border/30">
-                            <Image
-                              src={product.image_url}
-                              alt={product.name}
-                              fill
-                              className="object-cover"
-                            />
+                            <Image src={cover} alt={product.name} fill className="object-cover" />
                           </div>
                         ) : (
                           <div className="w-10 h-10 rounded-lg bg-border/20 flex items-center justify-center flex-shrink-0">
@@ -139,11 +142,16 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-foreground font-medium">
-                      Rp {Number(product.price).toLocaleString("id-ID")}
+                      {product.price > 0
+                        ? `Rp ${Number(product.price).toLocaleString("id-ID")}`
+                        : <span className="text-muted/50 font-normal">No price</span>}
                     </td>
                     <td className="px-5 py-4">
                       <button
-                        onClick={() => handleToggleActive(product)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleActive(product);
+                        }}
                         className="flex items-center gap-1.5 text-xs font-medium transition-colors"
                       >
                         {product.is_active ? (
@@ -159,7 +167,7 @@ export default function AdminDashboard() {
                         )}
                       </button>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           href={`/admin/products/${product.id}/edit`}
@@ -181,7 +189,8 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

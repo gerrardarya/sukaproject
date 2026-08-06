@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
 
 type Banner = {
   id: number;
@@ -32,6 +33,7 @@ const FALLBACK: Banner[] = [
 const INTERVAL = 5000;
 
 export default function HeroSection() {
+  const whatsappNumber = useWhatsAppNumber();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
@@ -146,7 +148,7 @@ export default function HeroSection() {
             {/* CTAs */}
             <div className="flex gap-3 flex-wrap pointer-events-auto">
               <a
-                href="https://wa.me/1234567890"
+                href={buildWhatsAppUrl(whatsappNumber)}
                 className="px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition-all duration-200 shadow-md"
               >
                 {banner.button_text?.trim() || "Create Yours Now!"}

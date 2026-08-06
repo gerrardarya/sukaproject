@@ -178,7 +178,7 @@ export default function FeaturedProductsSection() {
               {products.map((product) => {
                 const id = product.id;
                 if (id == null) return null;
-                const src = product.image_url?.trim() || PLACEHOLDER;
+                const src = product.image_urls?.[0]?.trim() || product.image_url?.trim() || PLACEHOLDER;
                 const remote = src.startsWith("http");
 
                 return (

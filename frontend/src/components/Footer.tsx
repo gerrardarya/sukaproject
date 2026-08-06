@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle, Instagram, ChevronDown } from "lucide-react";
+import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
 
 const sections = [
   {
@@ -25,6 +28,8 @@ const sections = [
 ];
 
 function BrandBlock() {
+  const whatsappNumber = useWhatsAppNumber();
+
   return (
     <div className="max-w-sm">
       <Link href="/" className="inline-flex items-center">
@@ -52,7 +57,7 @@ function BrandBlock() {
           <Instagram className="w-5 h-5" />
         </a>
         <a
-          href="https://wa.me/1234567890"
+          href={buildWhatsAppUrl(whatsappNumber)}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="WhatsApp"

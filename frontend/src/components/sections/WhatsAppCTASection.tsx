@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MessageCircle, Send, ShieldCheck, Users, Lightbulb } from "lucide-react";
+import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
 
 const steps = [
   {
@@ -34,6 +35,7 @@ const fadeUp = (delay = 0) => ({
 });
 
 export default function WhatsAppCTASection() {
+  const whatsappNumber = useWhatsAppNumber();
   const [form, setForm] = useState({ name: "", email: "", phone: "", enquiry: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -47,10 +49,8 @@ export default function WhatsAppCTASection() {
     setSending(true);
     // Simulate a brief send delay, then redirect to WhatsApp
     await new Promise((r) => setTimeout(r, 600));
-    const msg = encodeURIComponent(
-      `Hi! I'd like to enquire.\n\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\n\nEnquiry:\n${form.enquiry}`
-    );
-    window.open(`https://wa.me/1234567890?text=${msg}`, "_blank");
+    const msg = `Hi! I'd like to enquire.\n\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\n\nEnquiry:\n${form.enquiry}`;
+    window.open(buildWhatsAppUrl(whatsappNumber, msg), "_blank");
     setSending(false);
     setSent(true);
     setTimeout(() => setSent(false), 4000);
@@ -215,7 +215,7 @@ export default function WhatsAppCTASection() {
 
               {/* Secondary — WhatsApp direct */}
               <a
-                href="https://wa.me/1234567890"
+                href={buildWhatsAppUrl(whatsappNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 border border-border/50 text-foreground py-3.5 rounded-xl text-sm font-medium hover:border-accent/40 hover:text-accent transition-all duration-200"

@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 // Server-only client — service role bypasses RLS entirely
 const supabaseAdmin = createSupabaseClient(
@@ -9,10 +10,10 @@ const supabaseAdmin = createSupabaseClient(
 );
 
 export async function deleteProduct(id: number) {
-  // Fetch the product first to get its image_url
+  // Fetch the product first to get its image(s)
   const { data: product } = await supabaseAdmin
     .from("products")
-    .select("image_url")
+    .select("image_url, image_urls")
     .eq("id", id)
     .single();
 
@@ -20,16 +21,17 @@ export async function deleteProduct(id: number) {
   const { error } = await supabaseAdmin.from("products").delete().eq("id", id);
   if (error) throw new Error(error.message);
 
-  // Delete the image from storage if it belongs to our bucket
-  if (product?.image_url) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const bucketPrefix = `${supabaseUrl}/storage/v1/object/public/images/`;
+  // Delete every image that belongs to our bucket
+  const urls = new Set<string>(product?.image_urls ?? []);
+  if (product?.image_url) urls.add(product.image_url);
 
-    if (product.image_url.startsWith(bucketPrefix)) {
-      const fileName = product.image_url.replace(bucketPrefix, "");
-      await supabaseAdmin.storage.from("images").remove([fileName]);
-    }
+  for (const url of urls) {
+    const fileName = bucketFileName(url);
+    if (fileName) await supabaseAdmin.storage.from("images").remove([fileName]);
   }
+
+  revalidatePath("/products");
+  revalidatePath(`/products/${id}`);
 }
 
 export async function toggleProductActive(id: number, is_active: boolean) {
@@ -38,6 +40,9 @@ export async function toggleProductActive(id: number, is_active: boolean) {
     .update({ is_active })
     .eq("id", id);
   if (error) throw new Error(error.message);
+
+  revalidatePath("/products");
+  revalidatePath(`/products/${id}`);
 }
 
 export async function createProduct(data: {
@@ -45,11 +50,14 @@ export async function createProduct(data: {
   description: string;
   price: number;
   image_url: string;
+  image_urls: string[];
   category: string;
   is_active: boolean;
 }) {
   const { error } = await supabaseAdmin.from("products").insert([data]);
   if (error) throw new Error(error.message);
+
+  revalidatePath("/products");
 }
 
 export async function updateProduct(
@@ -59,15 +67,38 @@ export async function updateProduct(
     description: string;
     price: number;
     image_url: string;
+    image_urls: string[];
     category: string;
     is_active: boolean;
   }
 ) {
+  const { data: existing } = await supabaseAdmin
+    .from("products")
+    .select("image_url, image_urls")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabaseAdmin
     .from("products")
     .update(data)
     .eq("id", id);
   if (error) throw new Error(error.message);
+
+  // Remove images that were dropped from the gallery during this edit
+  const oldUrls = new Set<string>(existing?.image_urls ?? []);
+  if (existing?.image_url) oldUrls.add(existing.image_url);
+
+  const newUrls = new Set<string>(data.image_urls);
+  if (data.image_url) newUrls.add(data.image_url);
+
+  for (const url of oldUrls) {
+    if (newUrls.has(url)) continue;
+    const fileName = bucketFileName(url);
+    if (fileName) await supabaseAdmin.storage.from("images").remove([fileName]);
+  }
+
+  revalidatePath("/products");
+  revalidatePath(`/products/${id}`);
 }
 
 // ─── Category Actions ─────────────────────────────────────────────
@@ -443,6 +474,7 @@ export async function deleteTeamMember(id: number) {
 export async function upsertWhatsAppSettings(data: {
   greeting_message: string;
   prefilled_message: string;
+  phone_number: string;
 }) {
   const { data: existing } = await supabaseAdmin
     .from("whatsapp_settings")
@@ -454,6 +486,7 @@ export async function upsertWhatsAppSettings(data: {
   const payload = {
     greeting_message: data.greeting_message.trim(),
     prefilled_message: data.prefilled_message.trim(),
+    phone_number: data.phone_number.replace(/\D/g, ""),
   };
 
   if (existing?.id != null) {

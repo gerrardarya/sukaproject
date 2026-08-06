@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
 
 type LinkItem = {
   title: string;
@@ -13,10 +14,13 @@ type LinkItem = {
 };
 
 export default function LinkTreePage() {
+  const whatsappNumber = useWhatsAppNumber();
   // ✅ Replace these with real URLs
   const instagramUrl = "https://instagram.com/yourbrand";
-  const whatsappUrl =
-    "https://wa.me/1234567890?text=Hi%20I%E2%80%99d%20like%20to%20consult%20about%20a%20custom%20hamper%20%E2%9C%A8";
+  const whatsappUrl = buildWhatsAppUrl(
+    whatsappNumber,
+    "Hi I'd like to consult about a custom hamper ✨"
+  );
   const websiteUrl = "/"; // or "https://yourdomain.com"
 
   const links: LinkItem[] = [

@@ -149,7 +149,7 @@ export default function PhilosophySection() {
                   .map((client, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-center flex-shrink-0 min-w-[120px] opacity-50 hover:opacity-90 transition-opacity duration-300"
+                      className="flex items-center justify-center flex-shrink-0 min-w-[120px] opacity-70 hover:opacity-100 transition-opacity duration-300"
                     >
                       <ClientLogo name={client.name} logo={client.logo_url} />
                     </div>

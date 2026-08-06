@@ -11,6 +11,7 @@ type WhatsAppSettingsRow = {
   id?: number;
   greeting_message: string | null;
   prefilled_message: string | null;
+  phone_number: string | null;
 };
 
 export default function AdminWhatsAppPage() {
@@ -22,6 +23,7 @@ export default function AdminWhatsAppPage() {
   const [form, setForm] = useState({
     greeting_message: "",
     prefilled_message: "",
+    phone_number: "",
   });
 
   const loadSettings = useCallback(async () => {
@@ -38,6 +40,7 @@ export default function AdminWhatsAppPage() {
       setForm({
         greeting_message: row.greeting_message ?? "",
         prefilled_message: row.prefilled_message ?? "",
+        phone_number: row.phone_number ?? "",
       });
     }
     setLoading(false);
@@ -47,15 +50,21 @@ export default function AdminWhatsAppPage() {
     loadSettings();
   }, [loadSettings]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  const digitsOnly = form.phone_number.replace(/\D/g, "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.greeting_message.trim() || !form.prefilled_message.trim()) {
       setError("Both messages are required.");
+      return;
+    }
+    if (digitsOnly.length < 8) {
+      setError("Enter a valid WhatsApp number, including the country code (e.g. 6281234567890).");
       return;
     }
 
@@ -67,6 +76,7 @@ export default function AdminWhatsAppPage() {
       await upsertWhatsAppSettings({
         greeting_message: form.greeting_message.trim(),
         prefilled_message: form.prefilled_message.trim(),
+        phone_number: digitsOnly,
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -98,14 +108,40 @@ export default function AdminWhatsAppPage() {
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <h1 className="text-2xl font-semibold text-foreground">WhatsApp Popup</h1>
+              <h1 className="text-2xl font-semibold text-foreground">WhatsApp Settings</h1>
               <p className="text-sm text-muted mt-0.5">
-                Customize the floating WhatsApp chat bubble (site-wide)
+                Contact number and floating chat bubble (site-wide)
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm space-y-5">
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                Contact Number
+              </h2>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="phone_number">
+                  WhatsApp Number <span className="text-red-400">*</span>
+                </label>
+                <input
+                  id="phone_number"
+                  name="phone_number"
+                  type="text"
+                  inputMode="numeric"
+                  value={form.phone_number}
+                  onChange={handleChange}
+                  required
+                  placeholder="6281234567890"
+                  className="w-full px-4 py-3 rounded-xl border border-border/60 bg-[#f8f7f4] text-foreground placeholder:text-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all duration-200"
+                />
+                <p className="text-xs text-muted">
+                  Country code + number, no spaces, dashes or leading &ldquo;+&rdquo; (e.g. 6281234567890 for an Indonesian number). Used for every WhatsApp link and button on the site.
+                </p>
+              </div>
+            </div>
+
             <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm space-y-5">
               <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
                 Messages

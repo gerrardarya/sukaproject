@@ -44,6 +44,7 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
 ];
 
 const SORT_VALUES = SORT_OPTIONS.map((o) => o.value);
+const PAGE_SIZE = 15;
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -90,6 +91,11 @@ function ProductsPageContent() {
   // UI toggles
   const [showPricePanel, setShowPricePanel] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+
+  // Pagination — 15 products at a time, more load in as the sentinel scrolls into view
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -178,6 +184,42 @@ function ProductsPageContent() {
 
     return list;
   }, [products, activeCategory, priceMode, underMax, rangeMin, rangeMax, sortBy]);
+
+  // Reset to the first page whenever the filters change
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [activeCategory, priceMode, underMax, rangeMin, rangeMax, sortBy]);
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredProducts.length;
+
+  // Latest values for the IntersectionObserver callback below, which is set up once
+  const hasMoreRef = useRef(hasMore);
+  hasMoreRef.current = hasMore;
+  const loadingMoreRef = useRef(loadingMore);
+  loadingMoreRef.current = loadingMore;
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        if (loadingMoreRef.current || !hasMoreRef.current) return;
+
+        setLoadingMore(true);
+        setTimeout(() => {
+          setVisibleCount((c) => c + PAGE_SIZE);
+          setLoadingMore(false);
+        }, 400);
+      },
+      { rootMargin: "400px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore]);
 
   // Active price filter label for display
   const activePriceLabel = useMemo(() => {
@@ -451,11 +493,21 @@ function ProductsPageContent() {
 
           {/* Product grid */}
           {!loading && !error && filteredProducts.length > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
+                {visibleProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {hasMore && (
+                <div ref={sentinelRef} className="flex items-center justify-center h-16 mt-6">
+                  {loadingMore && (
+                    <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                  )}
+                </div>
+              )}
+            </>
           )}
 
           {/* Empty state — filters returned nothing */}
@@ -487,7 +539,7 @@ function ProductCard({ product }: { product: Product }) {
   if (id == null) return null;
 
   const href = `/products/${id}`;
-  const imageSrc = product.image_url?.trim() || "/logo/logo-red.png";
+  const imageSrc = product.image_urls?.[0]?.trim() || product.image_url?.trim() || "/logo/logo-red.png";
 
   return (
     <Link
@@ -517,7 +569,7 @@ function ProductCard({ product }: { product: Product }) {
         <p className="text-muted text-xs sm:text-sm leading-relaxed whitespace-pre-line line-clamp-2">
           {product.description}
         </p>
-        {typeof product.price === "number" && !Number.isNaN(product.price) ? (
+        {typeof product.price === "number" && !Number.isNaN(product.price) && product.price > 0 ? (
           <p className="text-foreground/80 text-xs sm:text-sm font-medium pt-1">
             {formatPrice(product.price)}
           </p>
