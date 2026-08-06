@@ -67,9 +67,9 @@ export default function InstagramGallerySection() {
             href={PROFILE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-foreground text-lg font-medium hover:text-accent transition-colors duration-200"
+            className="inline-flex items-center gap-1.5 sm:gap-2 text-foreground text-sm sm:text-lg font-medium hover:text-accent transition-colors duration-200"
           >
-            <Instagram className="w-5 h-5" />
+            <Instagram className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
             Follow us on Instagram @custom.at.suka
           </a>
         </div>
