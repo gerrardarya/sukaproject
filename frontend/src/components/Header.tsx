@@ -7,28 +7,19 @@ import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import MobileNav from "./MobileNav";
 import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
+import { supabase } from "@/lib/supabase";
 
 type DropdownItem = { label: string; href: string };
 type NavItem =
   | { label: string; href: string; children?: never }
   | { label: string; href?: never; children: DropdownItem[] };
 
-const NAV: NavItem[] = [
-  {
-    label: "Products",
-    children: [
-      { label: "All Products", href: "/products" },
-      { label: "Baby Hampers & Birthday", href: "/products?category=baby" },
-      { label: "Corporate", href: "/products?category=corporate" },
-      { label: "Packaging", href: "/products?category=packaging" },
-      { label: "Wedding", href: "/products?category=wedding" },
-    ],
-  },
+const OTHER_NAV: NavItem[] = [
   {
     label: "How to Order",
     children: [
-      { label: "Ordering guide", href: "/how-to-order" },
       { label: "Process", href: "/#process" },
+      { label: "Ordering guide", href: "/how-to-order" },
       { label: "FAQ", href: "/how-to-order#faq" },
     ],
   },
@@ -47,9 +38,44 @@ export default function Header({ transparentOnTop = false }: { transparentOnTop?
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [productCategories, setProductCategories] = useState<string[]>([]);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
   const whatsappNumber = useWhatsAppNumber();
+
+  useEffect(() => {
+    let active = true;
+    supabase
+      .from("products")
+      .select("category")
+      .eq("is_active", true)
+      .then(({ data }) => {
+        if (!active || !data) return;
+        const set = new Set<string>();
+        for (const row of data as { category: string | null }[]) {
+          const c = row.category?.trim();
+          if (c) set.add(c);
+        }
+        setProductCategories(Array.from(set).sort((a, b) => a.localeCompare(b)));
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const NAV: NavItem[] = [
+    {
+      label: "Products",
+      children: [
+        { label: "All Products", href: "/products" },
+        ...productCategories.map((category) => ({
+          label: category,
+          href: `/products?category=${encodeURIComponent(category)}`,
+        })),
+      ],
+    },
+    ...OTHER_NAV,
+  ];
 
   const socialItems = [
     { label: "WhatsApp", link: buildWhatsAppUrl(whatsappNumber) },

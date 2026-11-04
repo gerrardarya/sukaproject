@@ -69,8 +69,7 @@ function BrandBlock() {
       </div>
 
       <p className="mt-8 text-muted text-sm">
-        © {new Date().getFullYear()} Custom at Suka. Thoughtful hampers &amp;
-        custom gifts.
+        © {new Date().getFullYear()} Custom at Suka.
       </p>
     </div>
   );

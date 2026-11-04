@@ -36,7 +36,7 @@ export default function FindUsSection() {
           <p className="text-muted text-lg leading-relaxed mb-8">
             Our showroom are available for visit by appointment only.
             <br />
-            Contact our store admin through whatsapp.
+            Contact us to book your visit and get a Free Consultation.
           </p>
 
           <div className="space-y-3 mb-8">
@@ -57,7 +57,7 @@ export default function FindUsSection() {
             className="inline-flex items-center gap-2 bg-foreground text-background px-8 py-3 rounded-full font-medium hover:bg-foreground/85 transition-all duration-300 self-start"
           >
             <MessageCircle className="w-5 h-5" />
-            Chat on WhatsApp
+            Make Your Appointment
           </a>
         </div>
 

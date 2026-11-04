@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Forum, Cormorant_Garamond } from "next/font/google";
-import { ArrowLeft, MessageCircle, ChevronRight, Package, Sparkles } from "lucide-react";
+import { ArrowLeft, MessageCircle, ChevronRight, Sparkles } from "lucide-react";
 import Header from "../../../Header";
 import Footer from "../../../Footer";
 import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
@@ -172,10 +172,6 @@ export default function ProductDetail({
 
               {/* Highlights */}
               <div className="mb-7 space-y-3.5">
-                <div className="flex items-start gap-3 text-sm text-muted">
-                  <Package className="w-4 h-4 mt-0.5 text-accent shrink-0" />
-                  <span>Custom packaging included with every order</span>
-                </div>
                 <div className="flex items-start gap-3 text-sm text-muted">
                   <Sparkles className="w-4 h-4 mt-0.5 text-accent shrink-0" />
                   <span>Fully customizable — tell us your vision and we'll bring it to life</span>

@@ -292,7 +292,7 @@ function ProductsPageContent() {
 
               {/* Filter & Sort toolbar */}
               <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
-                {/* Left: Price filter */}
+                {/* Left: Filter (price) */}
                 <div className="relative">
                   <button
                     type="button"
@@ -309,7 +309,7 @@ function ProductsPageContent() {
                     ].join(" ")}
                   >
                     <SlidersHorizontal className="w-3.5 h-3.5" />
-                    {activePriceLabel ? activePriceLabel : "Price"}
+                    {activePriceLabel ? activePriceLabel : "Filter"}
                     {activePriceLabel && (
                       <span
                         role="button"
