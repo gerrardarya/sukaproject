@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Forum, Cormorant_Garamond } from "next/font/google";
-import { ArrowLeft, MessageCircle, ChevronRight, Sparkles } from "lucide-react";
+import { ArrowLeft, MessageCircle, Sparkles } from "lucide-react";
 import Header from "../../../Header";
 import Footer from "../../../Footer";
 import { useWhatsAppNumber, buildWhatsAppUrl } from "@/lib/useWhatsAppNumber";
@@ -69,19 +69,6 @@ export default function ProductDetail({
             <ArrowLeft className="w-4 h-4" />
             Back to catalogue
           </Link>
-
-          {/* Breadcrumb */}
-          <nav className="mb-10 flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-accent transition-colors duration-200">
-              Home
-            </Link>
-            <ChevronRight className="w-3 h-3 opacity-50" />
-            <Link href="/products" className="hover:text-accent transition-colors duration-200">
-              Products
-            </Link>
-            <ChevronRight className="w-3 h-3 opacity-50" />
-            <span className="text-foreground/60 truncate max-w-[180px]">{product.name}</span>
-          </nav>
 
           <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-20 items-start">
 

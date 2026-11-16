@@ -245,6 +245,171 @@ function ProductsPageContent() {
     setShowPricePanel(false);
   }
 
+  const categoryPills = categories.map((cat) => {
+    const active = activeCategory === cat;
+    return (
+      <button
+        key={cat}
+        type="button"
+        onClick={() => setActiveCategory(cat)}
+        className={[
+          "shrink-0 rounded-full px-4 py-2 text-xs font-medium transition-colors duration-200",
+          "border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f7f4]",
+          active
+            ? "border-foreground/20 bg-foreground text-[#f8f7f4]"
+            : "border-border/80 bg-white/80 text-muted hover:text-foreground hover:border-foreground/15",
+        ].join(" ")}
+      >
+        {cat}
+      </button>
+    );
+  });
+
+  const filterControl = (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowPricePanel((v) => !v);
+          setShowSortDropdown(false);
+        }}
+        className={[
+          "inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium border transition-colors duration-200",
+          activePriceLabel
+            ? "border-accent/50 bg-accent/10 text-accent"
+            : "border-border/80 bg-white/80 text-muted hover:text-foreground hover:border-foreground/15",
+        ].join(" ")}
+      >
+        <SlidersHorizontal className="w-3.5 h-3.5" />
+        {activePriceLabel ? activePriceLabel : "Filter"}
+        {activePriceLabel && (
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => { e.stopPropagation(); resetPriceFilter(); }}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); resetPriceFilter(); } }}
+            className="ml-0.5 hover:text-foreground"
+          >
+            <X className="w-3 h-3" />
+          </span>
+        )}
+      </button>
+
+      {/* Price panel */}
+      {showPricePanel && (
+        <div
+          className="absolute z-20 top-full mt-2 left-0 w-72 bg-white rounded-2xl border border-border/60 shadow-lg p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-muted mb-3">
+            Filter by price
+          </p>
+
+          {/* Under presets */}
+          <div className="space-y-1 mb-4">
+            {UNDER_PRESETS.map((preset) => (
+              <button
+                key={preset.value}
+                type="button"
+                onClick={() => {
+                  setPriceMode("under");
+                  setUnderMax(preset.value);
+                  setShowPricePanel(false);
+                }}
+                className={[
+                  "w-full text-left px-3 py-2 rounded-xl text-sm transition-colors duration-150",
+                  priceMode === "under" && underMax === preset.value
+                    ? "bg-accent/10 text-accent font-medium"
+                    : "text-muted hover:bg-[#f8f7f4] hover:text-foreground",
+                ].join(" ")}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-px bg-border/40 mb-4" />
+
+          {/* Custom range */}
+          <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-muted mb-2">
+            Price range
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Min"
+              value={rangeMin}
+              onFocus={() => setPriceMode("range")}
+              onChange={(e) => { setPriceMode("range"); setRangeMin(e.target.value); }}
+              className="w-full border border-border/60 rounded-xl px-3 py-2 text-sm text-foreground placeholder-muted/50 focus:outline-none focus:border-accent/50 bg-[#f8f7f4]"
+            />
+            <span className="text-muted text-xs shrink-0">–</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Max"
+              value={rangeMax}
+              onFocus={() => setPriceMode("range")}
+              onChange={(e) => { setPriceMode("range"); setRangeMax(e.target.value); }}
+              className="w-full border border-border/60 rounded-xl px-3 py-2 text-sm text-foreground placeholder-muted/50 focus:outline-none focus:border-accent/50 bg-[#f8f7f4]"
+            />
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              type="button"
+              onClick={() => setShowPricePanel(false)}
+              className="flex-1 py-2 rounded-xl text-xs font-medium bg-foreground text-[#f8f7f4] hover:bg-foreground/85 transition-colors duration-150"
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              onClick={resetPriceFilter}
+              className="flex-1 py-2 rounded-xl text-xs font-medium border border-border/60 text-muted hover:text-foreground hover:border-foreground/20 transition-colors duration-150"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const sortControl = (
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => { setShowSortDropdown((v) => !v); setShowPricePanel(false); }}
+        className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium border border-border/80 bg-white/80 text-muted hover:text-foreground hover:border-foreground/15 transition-colors duration-200"
+      >
+        Sort: {activeSortLabel}
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSortDropdown ? "rotate-180" : ""}`} />
+      </button>
+
+      {showSortDropdown && (
+        <div className="absolute z-20 top-full mt-2 right-0 w-52 bg-white rounded-2xl border border-border/60 shadow-lg py-2 overflow-hidden">
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => { setSortBy(opt.value); setShowSortDropdown(false); }}
+              className={[
+                "w-full text-left px-4 py-2.5 text-sm transition-colors duration-150",
+                sortBy === opt.value
+                  ? "text-accent font-medium bg-accent/5"
+                  : "text-muted hover:bg-[#f8f7f4] hover:text-foreground",
+              ].join(" ")}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#f8f7f4]" onClick={() => setShowSortDropdown(false)}>
       <Header />
@@ -252,188 +417,24 @@ function ProductsPageContent() {
       <main className="pt-28 pb-20 px-6 lg:px-10">
         <div className="w-full">
 
-          {/* Page header */}
-          <header className="mb-12 lg:mb-14 max-w-2xl">
-            <p className="text-accent text-xs font-medium tracking-[0.2em] uppercase mb-3">
-              Catalogue
-            </p>
-            <h1 className="text-foreground text-3xl md:text-4xl font-semibold tracking-tight">
-              Our Creations
-            </h1>
-            <p className="mt-3 text-muted text-sm md:text-base leading-relaxed">
-              Pieces from our studio — updated as we add new work.
-            </p>
-          </header>
-
           {!loading && products.length > 0 && (
             <>
-              {/* Category pills */}
-              <div className="mb-5 flex flex-wrap gap-2">
-                {categories.map((cat) => {
-                  const active = activeCategory === cat;
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setActiveCategory(cat)}
-                      className={[
-                        "rounded-full px-4 py-2 text-xs font-medium transition-colors duration-200",
-                        "border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f7f4]",
-                        active
-                          ? "border-foreground/20 bg-foreground text-[#f8f7f4]"
-                          : "border-border/80 bg-white/80 text-muted hover:text-foreground hover:border-foreground/15",
-                      ].join(" ")}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
+              {/* Mobile toolbar (<lg): category pills scroll horizontally, Filter + Sort below */}
+              <div className="lg:hidden mb-8 space-y-3">
+                <div className="-mx-6 px-6 overflow-x-auto scrollbar-hide">
+                  <div className="flex items-center gap-2 w-max">{categoryPills}</div>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  {filterControl}
+                  {sortControl}
+                </div>
               </div>
 
-              {/* Filter & Sort toolbar */}
-              <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
-                {/* Left: Filter (price) */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowPricePanel((v) => !v);
-                      setShowSortDropdown(false);
-                    }}
-                    className={[
-                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium border transition-colors duration-200",
-                      activePriceLabel
-                        ? "border-accent/50 bg-accent/10 text-accent"
-                        : "border-border/80 bg-white/80 text-muted hover:text-foreground hover:border-foreground/15",
-                    ].join(" ")}
-                  >
-                    <SlidersHorizontal className="w-3.5 h-3.5" />
-                    {activePriceLabel ? activePriceLabel : "Filter"}
-                    {activePriceLabel && (
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(e) => { e.stopPropagation(); resetPriceFilter(); }}
-                        onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); resetPriceFilter(); } }}
-                        className="ml-0.5 hover:text-foreground"
-                      >
-                        <X className="w-3 h-3" />
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Price panel */}
-                  {showPricePanel && (
-                    <div
-                      className="absolute z-20 top-full mt-2 left-0 w-72 bg-white rounded-2xl border border-border/60 shadow-lg p-4"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-muted mb-3">
-                        Filter by price
-                      </p>
-
-                      {/* Under presets */}
-                      <div className="space-y-1 mb-4">
-                        {UNDER_PRESETS.map((preset) => (
-                          <button
-                            key={preset.value}
-                            type="button"
-                            onClick={() => {
-                              setPriceMode("under");
-                              setUnderMax(preset.value);
-                              setShowPricePanel(false);
-                            }}
-                            className={[
-                              "w-full text-left px-3 py-2 rounded-xl text-sm transition-colors duration-150",
-                              priceMode === "under" && underMax === preset.value
-                                ? "bg-accent/10 text-accent font-medium"
-                                : "text-muted hover:bg-[#f8f7f4] hover:text-foreground",
-                            ].join(" ")}
-                          >
-                            {preset.label}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="h-px bg-border/40 mb-4" />
-
-                      {/* Custom range */}
-                      <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-muted mb-2">
-                        Price range
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="Min"
-                          value={rangeMin}
-                          onFocus={() => setPriceMode("range")}
-                          onChange={(e) => { setPriceMode("range"); setRangeMin(e.target.value); }}
-                          className="w-full border border-border/60 rounded-xl px-3 py-2 text-sm text-foreground placeholder-muted/50 focus:outline-none focus:border-accent/50 bg-[#f8f7f4]"
-                        />
-                        <span className="text-muted text-xs shrink-0">–</span>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="Max"
-                          value={rangeMax}
-                          onFocus={() => setPriceMode("range")}
-                          onChange={(e) => { setPriceMode("range"); setRangeMax(e.target.value); }}
-                          className="w-full border border-border/60 rounded-xl px-3 py-2 text-sm text-foreground placeholder-muted/50 focus:outline-none focus:border-accent/50 bg-[#f8f7f4]"
-                        />
-                      </div>
-                      <div className="flex gap-2 mt-3">
-                        <button
-                          type="button"
-                          onClick={() => setShowPricePanel(false)}
-                          className="flex-1 py-2 rounded-xl text-xs font-medium bg-foreground text-[#f8f7f4] hover:bg-foreground/85 transition-colors duration-150"
-                        >
-                          Apply
-                        </button>
-                        <button
-                          type="button"
-                          onClick={resetPriceFilter}
-                          className="flex-1 py-2 rounded-xl text-xs font-medium border border-border/60 text-muted hover:text-foreground hover:border-foreground/20 transition-colors duration-150"
-                        >
-                          Clear
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right: Sort */}
-                <div className="relative" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    onClick={() => { setShowSortDropdown((v) => !v); setShowPricePanel(false); }}
-                    className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium border border-border/80 bg-white/80 text-muted hover:text-foreground hover:border-foreground/15 transition-colors duration-200"
-                  >
-                    Sort: {activeSortLabel}
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSortDropdown ? "rotate-180" : ""}`} />
-                  </button>
-
-                  {showSortDropdown && (
-                    <div className="absolute z-20 top-full mt-2 right-0 w-52 bg-white rounded-2xl border border-border/60 shadow-lg py-2 overflow-hidden">
-                      {SORT_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => { setSortBy(opt.value); setShowSortDropdown(false); }}
-                          className={[
-                            "w-full text-left px-4 py-2.5 text-sm transition-colors duration-150",
-                            sortBy === opt.value
-                              ? "text-accent font-medium bg-accent/5"
-                              : "text-muted hover:bg-[#f8f7f4] hover:text-foreground",
-                          ].join(" ")}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+              {/* Desktop toolbar (lg+): Filter, then category pills, Sort pushed right */}
+              <div className="hidden lg:flex mb-8 items-center gap-3 flex-wrap">
+                {filterControl}
+                <div className="flex flex-wrap items-center gap-2">{categoryPills}</div>
+                <div className="ml-auto">{sortControl}</div>
               </div>
 
               {/* Results count */}
